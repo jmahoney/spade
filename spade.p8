@@ -1,0 +1,87 @@
+pico-8 cartridge // http://www.pico-8.com
+version 18
+__lua__
+
+-- our hero
+spade = {}
+
+spade.new = function()
+   local self = {}
+   self.sprite = 3
+   self.x = 60
+   self.y = 60
+   self.draw = spade.draw
+   return self
+end
+
+spade.draw = function(self)
+   spr(self.sprite, self.x, self.y)
+end
+
+-- spinner robot
+spinner = {}
+
+spinner.new = function(init)
+   init = init or {}
+   local self = {}
+   self.sprite_1 = 1
+   self.sprite_2 = 2
+   self.sprite = self.sprite_1
+   self.og_delay = init.delay or 6
+   self.delay = self.og_delay
+   self.x = init.x or 20
+   self.y = init.y or 20
+   self.update = spinner.update
+   self.spin = spinner.spin
+   self.draw = spinner.draw
+   return self
+end
+
+spinner.update = function(self)
+   self:spin()
+end
+
+spinner.spin = function(self)
+   self.delay -= 1
+   if self.delay < 0 then
+      if self.sprite == self.sprite_1 then
+	 self.sprite = self.sprite_2
+      else
+	 self.sprite = self.sprite_1
+      end
+      self.delay = self.og_delay
+   end
+end
+
+spinner.draw = function(self)
+   spr(self.sprite, self.x, self.y)
+end
+
+-- update
+
+function _init()
+   spade = spade.new()
+   spinner = spinner.new()
+end
+
+function _update()
+   spinner:update()
+end
+
+-- drawing
+function _draw()
+   rectfill(0,0,127,127,1)
+   spade:draw()
+   spinner:draw()
+end
+
+__gfx__
+00000000000000000000000000000000000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000800000800080000aa0000000087000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700008a800000a8a0000a9c0000000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0007700008aaa800008a80000ab90000000866000000880000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000008a800000a8a0000abbb000000077000000440000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700000800000800080000bd0000000555500004004000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+00060000102101c220242301822017240002000020000200232000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200
