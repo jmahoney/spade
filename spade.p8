@@ -24,9 +24,8 @@ spinner = {}
 spinner.new = function(init)
    init = init or {}
    local self = {}
-   self.sprite_1 = 1
-   self.sprite_2 = 2
-   self.sprite = self.sprite_1
+   self.sprites = {1,2}
+   self.sprite_index = 1
    self.og_delay = init.delay or 6
    self.delay = self.og_delay
    self.x = init.x or 20
@@ -42,19 +41,11 @@ spinner.update = function(self)
 end
 
 spinner.animate = function(self)
-   self.delay -= 1
-   if self.delay < 0 then
-      if self.sprite == self.sprite_1 then
-	 self.sprite = self.sprite_2
-      else
-	 self.sprite = self.sprite_1
-      end
-      self.delay = self.og_delay
-   end
+   self.sprite_index, self.delay = cycle_sprites(self.sprites, self.sprite_index, self.og_delay, self.delay)
 end
 
 spinner.draw = function(self)
-   spr(self.sprite, self.x, self.y)
+   spr(self.sprites[self.sprite_index], self.x, self.y)
 end
 
 -- sentry
