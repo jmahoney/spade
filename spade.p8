@@ -18,6 +18,41 @@ spade.draw = function(self)
    spr(self.sprite, self.x, self.y)
 end
 
+
+-- generic robot
+robot = {}
+
+robot.new = function(init)
+   init = init or {}
+   local self = {}
+   self.sprites = init.sprites or {}
+   self.sprite_index = 1
+   self.delay = init.delay or 6
+   self.current_delay = self.delay
+   self.x = init.x or 20
+   self.y = init.y or 20
+   self.update = init.update or robot.update
+   self.animate = init.animate or robot.animate
+   self.draw = init.draw or robot.draw
+
+   return self
+end
+
+robot.update = function(self)
+   self:animate()
+end
+
+robot.animate = function(self)
+   self.sprite_index, self.delay = cycle_sprites(self.sprites, self.sprite_index, self.og_delay, self.delay)
+end
+
+robot.draw = function(self)
+   spr(self.sprites[self.sprite_index], self.x, self.y)
+end
+
+
+
+
 -- spinner robot
 spinner = {}
 
