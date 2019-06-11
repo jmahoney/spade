@@ -43,7 +43,7 @@ robot.update = function(self)
 end
 
 robot.animate = function(self)
-   self.sprite_index, self.delay = cycle_sprites(self.sprites, self.sprite_index, self.og_delay, self.delay)
+   self.sprite_index, self.current_delay = cycle_sprites(self.sprites, self.sprite_index, self.delay, self.current_delay)
 end
 
 robot.draw = function(self)
@@ -54,34 +54,34 @@ end
 
 
 -- spinner robot
-spinner = {}
+--spinner = {}
 
-spinner.new = function(init)
-   init = init or {}
-   local self = {}
-   self.sprites = {1,2}
-   self.sprite_index = 1
-   self.og_delay = init.delay or 6
-   self.delay = self.og_delay
-   self.x = init.x or 20
-   self.y = init.y or 20
-   self.update = spinner.update
-   self.animate = spinner.animate
-   self.draw = spinner.draw
-   return self
-end
+-- spinner.new = function(init)
+--    init = init or {}
+--    local self = {}
+--    self.sprites = {1,2}
+--    self.sprite_index = 1
+--    self.og_delay = init.delay or 6
+--    self.delay = self.og_delay
+--    self.x = init.x or 20
+--    self.y = init.y or 20
+--    self.update = spinner.update
+--    self.animate = spinner.animate
+--    self.draw = spinner.draw
+--    return self
+-- end
 
-spinner.update = function(self)
-   self:animate()
-end
+-- spinner.update = function(self)
+--    self:animate()
+-- end
 
-spinner.animate = function(self)
-   self.sprite_index, self.delay = cycle_sprites(self.sprites, self.sprite_index, self.og_delay, self.delay)
-end
+-- spinner.animate = function(self)
+--    self.sprite_index, self.delay = cycle_sprites(self.sprites, self.sprite_index, self.og_delay, self.delay)
+-- end
 
-spinner.draw = function(self)
-   spr(self.sprites[self.sprite_index], self.x, self.y)
-end
+-- spinner.draw = function(self)
+--    spr(self.sprites[self.sprite_index], self.x, self.y)
+-- end
 
 -- sentry
 sentry = {}
@@ -129,7 +129,7 @@ end
 
 function _init()
    spade = spade.new()
-   spinner = spinner.new()
+   spinner = robot.new({sprites={1,2}, delay=6, x=20, y=20})
    sentry = sentry.new()
 end
 
