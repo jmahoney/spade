@@ -1,7 +1,7 @@
-spinner and sentry are basically the same thing. refactor them to actually be the same thing except for their specific diferences
+move our character
+move the robots
+put in keys
+pick up keys
+open doors
+make doors sprites?
 
-put in walls - maybe with a map
-
-use a map for floors
-
-collision detection
