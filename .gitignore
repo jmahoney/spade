@@ -41,3 +41,6 @@ luac.out
 
 *.p8~
 *.md~
+*.p8#
+*.md#
+.#TODO.md

@@ -42,7 +42,9 @@ robot.update = function(self)
 end
 
 robot.animate = function(self)
-   self.sprite_index, self.current_delay = cycle_sprites(self.sprites, self.sprite_index, self.delay, self.current_delay)
+   self.sprite_index, self.current_delay =
+      cycle_sprites(self.sprites, self.sprite_index,
+		    self.delay, self.current_delay)
 end
 
 robot.draw = function(self)
