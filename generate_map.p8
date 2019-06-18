@@ -17,99 +17,61 @@ area_templates = {
    trb= {1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0} 
 }
 
+cells = {
+   {number = 1, neighbours = {0,0,2,5}, template = ''},
+   {number = 2, neighbours = {1,0,3,6}, template = ''},
+   {number = 3, neighbours = {2,0,4,7}, template = ''},
+   {number = 4, neighbours = {3,0,0,8}, template = ''},
+   {number = 5, neighbours = {0,1,6,9}, template = ''},
+   {number = 6, neighbours = {5,2,7,10}, template = ''},
+   {number = 7, neighbours = {6,3,8,11}, template = ''},
+   {number = 8, neighbours = {7,4,0,12}, template = ''},
+   {number = 9, neighbours = {0,5,10,13}, template = ''},
+   {number = 10, neighbours = {9,6,11,14}, template = ''},
+   {number = 11, neighbours = {10,7,12,15}, template = ''},
+   {number = 12, neighbours = {11,8,0,16}, template = ''},
+   {number = 13, neighbours = {0,9,14,0}, template = ''},
+   {number = 14, neighbours = {13,10,15,0}, template = ''},
+   {number = 15, neighbours = {14,11,16,0}, template = ''},
+   {number = 16, neighbours = {15,12,0,0}, template = ''}
+}
 
-draw_area = function(xs, ys, template)
-   local sprite = 3 --filler
-   local x = xs
-   local y = ys
+sides = {
+   {name = 'left', cells = {1,5,8,13}},
+   {name = 'top', cells = {2,3}},
+   {name = 'right', cells = {4,8,12,16}},
+   {name = 'bottom', cells = {14,15}}
+}
 
-   for i = 1, 16 do
 
-      if template != "F" then
-	 sprite = area_templates[template][i]
-      end
-      
-      spr(sprite,x,y,0.5,0.5)
 
-      if i % 4 == 0 then
-	 x = xs
-	 y+=4
-      else
-	 x+=4
-      end
-   end 
-     
-end
-
-pick_area_template = function(area_number, layout)
-   
-   local all_neighbours = {
-      {0,0,2,5},
-      {1,0,3,6},
-      {2,0,4,7},
-      {3,0,0,8},
-      {0,1,6,9},
-      {5,2,7,10},
-      {6,3,8,11},
-      {7,4,0,12},
-      {0,5,10,13},
-      {9,6,11,14},
-      {10,7,12,15},
-      {11,8,0,16},
-      {0,9,14,0},
-      {13,10,15,0},
-      {14,11,16,0},
-      {15,12,0,0}
-   }
-
-   local area_type = layout[area_number]
-   local neighbours = all_neighbours[area_number]
-   
-   local area_template = ""
-   if area_type == "F" then return "F" end
-
-   if area_type == "C" or area_type == "S" or area_type == "E" then
-      
-      if (layout[neighbours[1]]== "C") then area_template = area_template.."l" end
-      if (layout[neighbours[2]] == "C") then area_template = area_template.."t" end
-      if (layout[neighbours[3]] == "C") then area_template = area_template.."r" end
-      if (layout[neighbours[4]] == "C") then area_template = area_template.."b" end
+pick_start_cell = function(previous_side)
+   local side
+   if previous_side == 1 then
+      side = 3
+   elseif previous_side == 2 then
+      side = 4
+   elseif previous_side == 3 then
+      side = 1
+   elseif previous_side == 4 then
+      side = 2
+   else
+      side = flr(rnd(4))+1
    end
-   if (area_template == "") then
-      print(area_number.." "..area_type.." "..area_template,0,area_number)
-   end
-   return area_template
+
+   if side == 1 or side == 3 then
+      return sides[side]['cells'][flr(rnd(4))+1]
+   else
+      return sides[side]['cells'][flr(rnd(2))+1]
+   end  
 end
-
-
 
 function _draw()
    cls()
-   --map(0,0,0,0,16,16)
-
-   local layout = {
-      "S","C","F","F",
-      "F","C","C","F",
-      "F","F","C","E",
-      "F","F","F","F"
-   }
-   
-   local x=0
-   local y=0
-   for i = 1,16 do
-      local area_template = pick_area_template(i, layout)
-      if (area_template != "ltrb") then
-	 draw_area(x, y, area_template)
-      end
-      
-      if (i % 4 == 0) then
-	 x = 0
-	 y +=32
-      else
-	 x += 32
-      end
-   end
+   print(pick_start_cell(),0,10)
 end
+
+
 
 
 
