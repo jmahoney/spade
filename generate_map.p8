@@ -90,19 +90,16 @@ end
 
 -- is this cell on a side so could be an exit
 is_potential_exit = function(cell)
-
+   foreach(sides, function(side)
+	      foreach(side['cells'], function(exit)
+			 if (exit == cell) then return true end
+	      end)
+   end)
+   return false
 end
 
 
--- apparently there's nowhere else to go so lets find exit out of the filled cells
-pick_exit_cell = function(current_cell)
 
-end
-
--- mark this one as the exit
-set_exit_cell = function(cell)
-
-end
 
 
 
@@ -135,14 +132,42 @@ function _init()
    end
 
    
-   
-   
+   --find an exit
+   local exits = {}
+   foreach(cells, function(cell)
+	      if (cell['template'] == PATH and is_potential_exit(cell)) then
+		     add(exits, cell)
+	      end
+	  
+   end)
+   if (#exits > 0) then
+      local exit = flr(rnd(#exits)+1)
+      cells[exit].template = EXIT
+   end
+
+   -- put in the filler
+   foreach(cells, function(cell)
+	      if (cell['template'] == UNFILLED) then
+		 cell['template'] = FILLER
+	      end
+   end)
 end
 
 function _draw()
    cls()
    print(start_cell, 0, 10)
    print(count_filled_cells(), 0, 20)
+
+   local y = 30
+   local x = 0
+   foreach(cells, function(cell)
+	      print(cell['template'], x, y)
+	      x = x + 10
+	      if (x == 40) then
+		 x = 0
+		 y = y + 10
+	      end
+   end)
 end
 
 
