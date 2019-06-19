@@ -44,3 +44,4 @@ luac.out
 *.p8#
 *.md#
 .#TODO.md
+.#generate_map.p8
