@@ -90,18 +90,18 @@ end
 
 -- is this cell on a side so could be an exit
 is_potential_exit = function(cell)
+   -- foreach(sides, function(side)
+   -- 	      foreach(side['cells'], function(exit)
+   -- 			 if (exit == cell) then return true end
+   -- 	      end)
+   -- end)
+   local found_exit = false
    foreach(sides, function(side)
-	      foreach(side['cells'], function(exit)
-			 if (exit == cell) then return true end
+	      foreach(side['cells'], function(c) if c == cell then found_exit = true end
 	      end)
    end)
-   return false
+   return found_exit
 end
-
-
-
-
-
 
 count_filled_cells = function()
    local filled_cells = 0
@@ -135,14 +135,14 @@ function _init()
    --find an exit
    local exits = {}
    foreach(cells, function(cell)
-	      if (cell['template'] == PATH and is_potential_exit(cell)) then
+	      if (cell['template'] == PATH and is_potential_exit(cell['number'])) then
 		     add(exits, cell)
 	      end
 	  
    end)
    if (#exits > 0) then
       local exit = flr(rnd(#exits)+1)
-      cells[exit].template = EXIT
+      cells[exit]['template'] = EXIT
    end
 
    -- put in the filler
@@ -154,12 +154,16 @@ function _init()
 end
 
 function _draw()
+   local x = 0
+   local y = 0
    cls()
    print(start_cell, 0, 10)
    print(count_filled_cells(), 0, 20)
+   
 
-   local y = 30
-   local x = 0
+   
+   y = 50
+   x = 0
    foreach(cells, function(cell)
 	      print(cell['template'], x, y)
 	      x = x + 10
