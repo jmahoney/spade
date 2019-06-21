@@ -112,6 +112,24 @@ count_filled_cells = function()
    return filled_cells
 end
 
+draw_cell = function(cell, xs, ys)
+   local x = xs
+   local y = ys
+   local x = xs
+   local y = ys
+   
+   for i = 1, 16 do
+      spr(cell['template'], x, y)
+      x += 8
+      if (i % 4 == 0) then
+       	 x = xs
+       	 y += 8
+      end
+   end
+   print(cell['number'], xs, ys)
+end
+
+
 function _init()
    start_cell = pick_start_cell()
    cells[start_cell]['template'] = ENTRANCE
@@ -154,24 +172,20 @@ function _init()
 end
 
 function _draw()
-   local x = 0
-   local y = 0
    cls()
-   print(start_cell, 0, 10)
-   print(count_filled_cells(), 0, 20)
+   local xs = 0
+   local ys = 0
+   for i = 1, 16 do
+      draw_cell(cells[i], xs, ys) 
+      xs += 32
+      if (i % 4 == 0) then
+	 xs = 0
+	 ys += 32
+      end
+      
+   end
    
-
    
-   y = 50
-   x = 0
-   foreach(cells, function(cell)
-	      print(cell['template'], x, y)
-	      x = x + 10
-	      if (x == 40) then
-		 x = 0
-		 y = y + 10
-	      end
-   end)
 end
 
 
