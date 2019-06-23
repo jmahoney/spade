@@ -1,6 +1,16 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+DEBUG = true
+
+log = function(msg)
+   if DEBUG then
+      printh(msg)
+   end
+   
+end
+
+log('hello from spade')
 
 SIDE_ROOM = 0
 LEFT_RIGHT_ROOM = 1
@@ -48,8 +58,6 @@ ROOMS = {}
 LEFT = 0
 RIGHT = 1
 DOWN = 2
-DOWN_LEFT = 3
-DOWN_RIGHT = 4
 
 function pick_direction()
    local r = flr(rnd(5)+1)
@@ -70,6 +78,10 @@ function _init()
    local start_room_number = flr(rnd(4)+1)
    local start_room_type = flr(rnd(2)+1)
 
+   if DEBUG then
+      start_room_number = 4
+   end
+      
    local start_room = room.new({is_start = true,
 				room_number = start_room_number,
 				room_type = start_room_type})
@@ -80,46 +92,64 @@ function _init()
 
    -- where do we want to place the next room
    local direction = pick_direction()
-   start_room.direction = direction
+
+   if DEBUG then
+      direction = RIGHT
+   end
+   log('direction: '..direction)   
    
    local horizontal_direction = LEFT
    if direction != DOWN then horizontal_direction = direction end
-   
+
+   log('horizontal direction: '..horizontal_direction)
+
    local current_room = start_room
    local next_room
-   tries = 0
 
+   -- we have one room down and now we need to put in the rest of
+   -- the path
 
-   -- we have one room down and now we need to put in the rest of the path
+   log('placed start room at '..current_room.room_number)
    
    path_completed = false
-   local horizontal_direction = LEFT
    -- until the path is completed we need to
+
+   log('about to place the rest of the path')
    while path_completed == false do
-      tries += 1
-      -- where do we want to put the next room - left, right, or down?
+
+      -- where do we want to put the next room?
+      -- left, right, or down?
       local next_room_direction = pick_direction()
 
-      -- if we want to place it horizontally and we can't because the current room is on an edge
-      -- then we want to try and go down. We switch horizontal direction at the same time.
-      if (next_room_direction == LEFT and not current_room:can_go_left_from_here())
-      or (next_room_direction == RIGHT and not current_room:can_go_right_from_here()) then
+      if DEBUG then
 	 next_room_direction = DOWN
-	 if horizontal_direction == LEFT then
-	    horizontal_direction = RIGHT
-	 else
-	    horizontal_direction = LEFT
-	 end
       end
 
-      --if we want to place the next room below the current room and we're on the bottom
-      --level the we've reached the end of the path
+      log('next room direction '..next_room_direction)
+      
+      -- if we want to place it horizontally and
+      -- we can't because the current room is on an edge
+      -- then we want to try and go down.
+      if (next_room_direction == LEFT and not current_room:can_go_left_from_here())
+      or (next_room_direction == RIGHT and not current_room:can_go_right_from_here()) then
+	 log('forced to go down')
+	 next_room_direction = DOWN	 
+      end
+
+      -- if we want to place the next room below the current
+      -- room and we're on the bottom level then we've
+      -- reached the end of the path
       if next_room_direction == DOWN and not current_room:can_go_down_from_here() then
+	 log('want to go down but cannot. marking '..current_room.room_number..' as exit')
 	 path_completed = true
 	 current_room.is_exit = true
 	 break
       end
 
+      if path_completed then
+	 log('path is completed but we are still processing?!')
+      end
+      
       -- we're still in our loop so lets place a room
       -- what room number is it
       local next_room_number
@@ -130,24 +160,33 @@ function _init()
       else
 	 next_room_number = current_room.room_number + 4
       end
+      
+      log('plicked next room number: '..next_room_number..'. the current room number is '..current_room.room_number)
 
       local next_room_type = LEFT_RIGHT_ROOM
       
-      -- if we're going down then we need to make sure the current room has a down exit
+      -- if we're going down then we need to make sure the
+      -- current room has a down exit
+      -- we also want to flip the horizontal direction
       if direction == DOWN then
 	 current_room.room_type = LEFT_RIGHT_BOTTOM_ROOM
 	 next_room_type = LEFT_RIGHT_TOP_ROOM
+	 if horizontal_direction == LEFT then
+	    horizontal_direction = RIGHT
+	 else
+	    horizontal_direction = LEFT
+	 end
+	 log('new horizontal direction is '..horizontal_direction)
       end
 
+      -- we place the room and get ready to start again
       local next_room = room.new({room_number = next_room_number,
 				  room_type = next_room_type})
-
-      ROOMS[next_room.room_number] = next_room
       
-      -- stop an infinte loop
-      if tries >= 16 then
-	 break
-      end
+      ROOMS[next_room.room_number] = next_room
+      log('placed a room at '..next_room.room_number)
+      current_room = next_room
+      log('current_room is now '..current_room.room_number)
    end
 end   
 
@@ -173,5 +212,6 @@ function _draw()
    end
    -- print(tries, 0, 0)
    -- print(path_completed, 0, 10)
+   
    
 end
