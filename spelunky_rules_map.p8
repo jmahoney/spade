@@ -77,10 +77,6 @@ function _init()
    -- first we put a room at one of the top rows
    local start_room_number = flr(rnd(4)+1)
    local start_room_type = flr(rnd(2)+1)
-
-   if DEBUG then
-      start_room_number = 4
-   end
       
    local start_room = room.new({is_start = true,
 				room_number = start_room_number,
@@ -93,9 +89,6 @@ function _init()
    -- where do we want to place the next room
    local direction = pick_direction()
 
-   if DEBUG then
-      direction = RIGHT
-   end
    log('direction: '..direction)   
    
    local horizontal_direction = LEFT
@@ -120,10 +113,6 @@ function _init()
       -- where do we want to put the next room?
       -- left, right, or down?
       local next_room_direction = pick_direction()
-
-      if DEBUG then
-	 next_room_direction = DOWN
-      end
 
       log('next room direction '..next_room_direction)
       
@@ -153,15 +142,15 @@ function _init()
       -- we're still in our loop so lets place a room
       -- what room number is it
       local next_room_number
-      if direction == LEFT then
+      if next_room_direction == LEFT then
 	 next_room_number = current_room.room_number - 1
-      elseif direction == RIGHT then
+      elseif next_room_direction == RIGHT then
 	 next_room_number = current_room.room_number + 1
       else
 	 next_room_number = current_room.room_number + 4
       end
       
-      log('plicked next room number: '..next_room_number..'. the current room number is '..current_room.room_number)
+      log('picked next room number: '..next_room_number..'. the current room number is '..current_room.room_number)
 
       local next_room_type = LEFT_RIGHT_ROOM
       
