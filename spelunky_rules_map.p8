@@ -14,7 +14,7 @@ log('hello from spade')
 
 SIDE_ROOM = 0
 LEFT_RIGHT_ROOM = 1
-LEFT_RIGHT_BOTTOM = 2
+LEFT_RIGHT_BOTTOM_ROOM = 2
 LEFT_RIGHT_TOP_ROOM = 3
 
 room = {}
@@ -115,20 +115,27 @@ function _init()
       local next_room_direction = pick_direction()
 
       log('next room direction '..next_room_direction)
+      if next_room_direction == DOWN then
+	 direction = DOWN
+      else
+	 direction = horizontal_direction
+      end
+      log('next actual direction '..direction)
+      
       
       -- if we want to place it horizontally and
       -- we can't because the current room is on an edge
       -- then we want to try and go down.
-      if (next_room_direction == LEFT and not current_room:can_go_left_from_here())
-      or (next_room_direction == RIGHT and not current_room:can_go_right_from_here()) then
+      if (direction == LEFT and not current_room:can_go_left_from_here())
+      or (direction == RIGHT and not current_room:can_go_right_from_here()) then
 	 log('forced to go down')
-	 next_room_direction = DOWN	 
+	 direction = DOWN	 
       end
 
       -- if we want to place the next room below the current
       -- room and we're on the bottom level then we've
       -- reached the end of the path
-      if next_room_direction == DOWN and not current_room:can_go_down_from_here() then
+      if direction == DOWN and not current_room:can_go_down_from_here() then
 	 log('want to go down but cannot. marking '..current_room.room_number..' as exit')
 	 path_completed = true
 	 current_room.is_exit = true
@@ -142,9 +149,9 @@ function _init()
       -- we're still in our loop so lets place a room
       -- what room number is it
       local next_room_number
-      if next_room_direction == LEFT then
+      if direction == LEFT then
 	 next_room_number = current_room.room_number - 1
-      elseif next_room_direction == RIGHT then
+      elseif direction == RIGHT then
 	 next_room_number = current_room.room_number + 1
       else
 	 next_room_number = current_room.room_number + 4
@@ -182,7 +189,7 @@ end
 function _draw()
    cls()
    local x = 0
-   local y = 0
+   local y = 10
    for i = 1, 16 do
       local room = ROOMS[i]
       local s = ''
@@ -191,6 +198,8 @@ function _draw()
    	 if room.is_start then s = s..'S' end
    	 if room.is_exit then s = s..'E' end
    	 print(s, x, y)
+      else
+	 print(room.room_number, x, y)
       end
       x+=32
       if i % 4 == 0 then
