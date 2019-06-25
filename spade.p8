@@ -130,10 +130,11 @@ function pick_direction()
 end
 
 
-function _init()
+generate_level = function()
+   local rooms = {}
    -- first lets fill our grid with filler rooms
    for i = 1, 16 do
-      add(ROOMS, room.new({room_number = i, room_type = SIDE_ROOM}))
+      add(rooms, room.new({room_number = i, room_type = SIDE_ROOM}))
    end
    
    -- first we put a room at one of the top rows
@@ -143,7 +144,7 @@ function _init()
    local start_room = room.new({is_start = true,
 				room_number = start_room_number,
 				room_type = start_room_type})
-   ROOMS[start_room_number] = start_room
+   rooms[start_room_number] = start_room
 
    -- now we place the other rooms
    
@@ -241,12 +242,18 @@ function _init()
       local next_room = room.new({room_number = next_room_number,
 				  room_type = next_room_type})
       
-      ROOMS[next_room.room_number] = next_room
+      rooms[next_room.room_number] = next_room
       log('placed a room at '..next_room.room_number)
       current_room = next_room
       log('current_room is now '..current_room.room_number)
    end
-end   
+   return rooms
+end
+
+function _init()
+   ROOMS = generate_level()
+end
+
 
 function _draw()
    cls()
