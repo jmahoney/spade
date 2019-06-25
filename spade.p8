@@ -2,135 +2,22 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
--- our hero
-spade = {}
+level = {}
 
-spade.new = function()
+level.new = function()
    local self = {}
-   self.sprite = 3
-   self.x = 10
-   self.y = 10
-   self.draw = spade.draw
+   self.rooms = {}
+   self.draw = level.draw
+   self.generate = level.generate
+   self:generate()
    return self
 end
 
-spade.draw = function(self)
-   spr(self.sprite, self.x, self.y)
-end
-
--- generic robot
-robot = {}
-
-robot.new = function(init)
-   init = init or {}
-   local self = {}
-   self.sprites = init.sprites or {}
-   self.sprite_index = 1
-   self.delay = init.delay or 6
-   self.current_delay = self.delay
-   self.x = init.x or 20
-   self.y = init.y or 20
-   self.update = init.update or robot.update
-   self.animate = init.animate or robot.animate
-   self.draw = init.draw or robot.draw
-
-   return self
-end
-
-robot.update = function(self)
-   self:animate()
-end
-
-robot.animate = function(self)
-   self.sprite_index, self.current_delay =
-      cycle_sprites(self.sprites, self.sprite_index,
-		    self.delay, self.current_delay)
-end
-
-robot.draw = function(self)
-   spr(self.sprites[self.sprite_index], self.x, self.y)
-end
-
-cycle_sprites = function(sprites, current_index, delay, current_delay)
-   local next_index = current_index
-   local next_delay = current_delay
-   next_delay -= 1
-   if next_delay < 0 then
-      next_index += 1
-      if next_index > #sprites then next_index = 1 end
-      next_delay = delay
-   end
-   return next_index, next_delay
-end
-
-DEBUG = true
-
-log = function(msg)
-   if DEBUG then
-      printh(msg)
-   end
-   
-end
-
-log('hello from spade')
-
-SIDE_ROOM = 0
-LEFT_RIGHT_ROOM = 1
-LEFT_RIGHT_BOTTOM_ROOM = 2
-LEFT_RIGHT_TOP_ROOM = 3
-
-room = {}
-room.new = function(init)
-   init = init or {}
-   local self = {}
-   self.room_type = init.room_type
-   self.is_start = false or init.is_start
-   self.is_exit = false or init.is_exit
-   self.room_number = init.room_number
-   self.can_go_left_from_here = room.can_go_left_from_here
-   self.can_go_right_from_here = room.can_go_right_from_here
-   self.can_go_down_from_here = room.can_go_down_from_here
-   return self
-end
-
-room.can_go_left_from_here = function(self)
-   if is_in_seq(self.room_number, {1,5,9,13}) then return false else return true end
-end
-
-room.can_go_right_from_here = function(self)
-   if is_in_seq(self.room_number, {4,8,12,16}) then return false else return true end
-end
-
-room.can_go_down_from_here = function(self)
-   if is_in_seq(self.room_number, {13,14,15,16}) then return false else return true end
-end
-
-is_in_seq = function(n, seq)
-   local found = false
-   foreach(seq, function(i)
-	      if i == n then
-		 found = true
-	      end
-   end)	      
-   return found
-end
-
-ROOMS = {}
-
-LEFT = 0
-RIGHT = 1
-DOWN = 2
-
-function pick_direction()
-   local r = flr(rnd(5)+1)
-
-   if r == 5 then return DOWN end
-   if r <= 2 then return LEFT end
-   return RIGHT
+level.draw = function()
 end
 
 
-generate_level = function()
+level.generate = function(self)
    local rooms = {}
    -- first lets fill our grid with filler rooms
    for i = 1, 16 do
@@ -247,11 +134,144 @@ generate_level = function()
       current_room = next_room
       log('current_room is now '..current_room.room_number)
    end
-   return rooms
+   self.rooms = rooms
 end
 
+room = {}
+room.new = function(init)
+   init = init or {}
+   local self = {}
+   self.room_type = init.room_type
+   self.is_start = false or init.is_start
+   self.is_exit = false or init.is_exit
+   self.room_number = init.room_number
+   self.can_go_left_from_here = room.can_go_left_from_here
+   self.can_go_right_from_here = room.can_go_right_from_here
+   self.can_go_down_from_here = room.can_go_down_from_here
+   return self
+end
+
+room.can_go_left_from_here = function(self)
+   if is_in_seq(self.room_number, {1,5,9,13}) then return false else return true end
+end
+
+room.can_go_right_from_here = function(self)
+   if is_in_seq(self.room_number, {4,8,12,16}) then return false else return true end
+end
+
+room.can_go_down_from_here = function(self)
+   if is_in_seq(self.room_number, {13,14,15,16}) then return false else return true end
+end
+
+
+
+-- our hero
+spade = {}
+
+spade.new = function()
+   local self = {}
+   self.sprite = 3
+   self.x = 10
+   self.y = 10
+   self.draw = spade.draw
+   return self
+end
+
+spade.draw = function(self)
+   spr(self.sprite, self.x, self.y)
+end
+
+-- generic robot
+robot = {}
+
+robot.new = function(init)
+   init = init or {}
+   local self = {}
+   self.sprites = init.sprites or {}
+   self.sprite_index = 1
+   self.delay = init.delay or 6
+   self.current_delay = self.delay
+   self.x = init.x or 20
+   self.y = init.y or 20
+   self.update = init.update or robot.update
+   self.animate = init.animate or robot.animate
+   self.draw = init.draw or robot.draw
+
+   return self
+end
+
+robot.update = function(self)
+   self:animate()
+end
+
+robot.animate = function(self)
+   self.sprite_index, self.current_delay =
+      cycle_sprites(self.sprites, self.sprite_index,
+		    self.delay, self.current_delay)
+end
+
+robot.draw = function(self)
+   spr(self.sprites[self.sprite_index], self.x, self.y)
+end
+
+cycle_sprites = function(sprites, current_index, delay, current_delay)
+   local next_index = current_index
+   local next_delay = current_delay
+   next_delay -= 1
+   if next_delay < 0 then
+      next_index += 1
+      if next_index > #sprites then next_index = 1 end
+      next_delay = delay
+   end
+   return next_index, next_delay
+end
+
+DEBUG = true
+
+log = function(msg)
+   if DEBUG then
+      printh(msg)
+   end
+   
+end
+
+log('hello from spade')
+
+SIDE_ROOM = 0
+LEFT_RIGHT_ROOM = 1
+LEFT_RIGHT_BOTTOM_ROOM = 2
+LEFT_RIGHT_TOP_ROOM = 3
+
+
+is_in_seq = function(n, seq)
+   local found = false
+   foreach(seq, function(i)
+	      if i == n then
+		 found = true
+	      end
+   end)	      
+   return found
+end
+
+ROOMS = {}
+
+LEFT = 0
+RIGHT = 1
+DOWN = 2
+
+function pick_direction()
+   local r = flr(rnd(5)+1)
+
+   if r == 5 then return DOWN end
+   if r <= 2 then return LEFT end
+   return RIGHT
+end
+
+
+
 function _init()
-   ROOMS = generate_level()
+   local level = level.new()
+   ROOMS = level.rooms
 end
 
 
