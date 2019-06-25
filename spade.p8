@@ -2,6 +2,64 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
+-- global constants
+DEBUG = true
+
+SIDE_ROOM = 0
+LEFT_RIGHT_ROOM = 1
+LEFT_RIGHT_BOTTOM_ROOM = 2
+LEFT_RIGHT_TOP_ROOM = 3
+
+ROOMS = {}
+
+LEFT = 0
+RIGHT = 1
+DOWN = 2
+
+-- useful functions
+log = function(msg)
+   if DEBUG then
+      printh(msg)
+   end
+   
+end
+
+is_in_seq = function(n, seq)
+   local found = false
+   foreach(seq, function(i)
+	      if i == n then
+		 found = true
+	      end
+   end)	      
+   return found
+end
+
+cycle_sprites = function(sprites, current_index, delay, current_delay)
+   local next_index = current_index
+   local next_delay = current_delay
+   next_delay -= 1
+   if next_delay < 0 then
+      next_index += 1
+      if next_index > #sprites then next_index = 1 end
+      next_delay = delay
+   end
+   return next_index, next_delay
+end
+
+
+
+
+
+function pick_direction()
+   local r = flr(rnd(5)+1)
+
+   if r == 5 then return DOWN end
+   if r <= 2 then return LEFT end
+   return RIGHT
+end
+
+
+-- objecty game element things
 level = {}
 
 level.new = function()
@@ -15,7 +73,6 @@ end
 
 level.draw = function()
 end
-
 
 level.generate = function(self)
    local rooms = {}
@@ -71,8 +128,7 @@ level.generate = function(self)
 	 direction = horizontal_direction
       end
       log('next actual direction '..direction)
-      
-      
+           
       -- if we want to place it horizontally and
       -- we can't because the current room is on an edge
       -- then we want to try and go down.
@@ -163,8 +219,6 @@ room.can_go_down_from_here = function(self)
    if is_in_seq(self.room_number, {13,14,15,16}) then return false else return true end
 end
 
-
-
 -- our hero
 spade = {}
 
@@ -214,60 +268,9 @@ robot.draw = function(self)
    spr(self.sprites[self.sprite_index], self.x, self.y)
 end
 
-cycle_sprites = function(sprites, current_index, delay, current_delay)
-   local next_index = current_index
-   local next_delay = current_delay
-   next_delay -= 1
-   if next_delay < 0 then
-      next_index += 1
-      if next_index > #sprites then next_index = 1 end
-      next_delay = delay
-   end
-   return next_index, next_delay
-end
-
-DEBUG = true
-
-log = function(msg)
-   if DEBUG then
-      printh(msg)
-   end
-   
-end
-
-log('hello from spade')
-
-SIDE_ROOM = 0
-LEFT_RIGHT_ROOM = 1
-LEFT_RIGHT_BOTTOM_ROOM = 2
-LEFT_RIGHT_TOP_ROOM = 3
 
 
-is_in_seq = function(n, seq)
-   local found = false
-   foreach(seq, function(i)
-	      if i == n then
-		 found = true
-	      end
-   end)	      
-   return found
-end
-
-ROOMS = {}
-
-LEFT = 0
-RIGHT = 1
-DOWN = 2
-
-function pick_direction()
-   local r = flr(rnd(5)+1)
-
-   if r == 5 then return DOWN end
-   if r <= 2 then return LEFT end
-   return RIGHT
-end
-
-
+-- game loop foo
 
 function _init()
    local level = level.new()
