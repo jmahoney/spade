@@ -77,8 +77,8 @@ level.spawn_coords = function(self)
       end
    end
    
-   local xs = (start_room * 32)-32+4
-   local xy = 4
+   local xs = (start_room * 32)-18
+   local xy = 1
 
    return xs, xy
 end
