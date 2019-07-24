@@ -98,9 +98,16 @@ end
 
 level.generate = function(self)
    local rooms = {}
+   local x = 0
+   local y = 0
    -- first lets fill our grid with filler rooms
    for i = 1, 16 do
-      add(rooms, room.new({room_number = i, room_type = SIDE_ROOM}))
+      add(rooms, room.new({room_number = i, room_type = SIDE_ROOM, x = x, y = y}))
+      x += 32
+      if i % 4 == 0 then
+	 x = 0
+	 y += 32
+      end
    end
    
    -- first we put a room at one of the top rows
@@ -117,26 +124,17 @@ level.generate = function(self)
 
    -- where do we want to place the next room
    local direction = pick_direction()
-
-   --log('direction: '..direction)   
    
    local horizontal_direction = LEFT
    if direction != DOWN then horizontal_direction = direction end
-
-   --log('horizontal direction: '..horizontal_direction)
 
    local current_room = start_room
    local next_room
 
    -- we have one room down and now we need to put in the rest of
-   -- the path
-
-   --log('placed start room at '..current_room.room_number)
-   
+   -- the path   
    path_completed = false
-   -- until the path is completed we need to
-
-   log('about to place the rest of the path')
+   
    while path_completed == false do
 
       -- where do we want to put the next room?
@@ -156,7 +154,6 @@ level.generate = function(self)
       -- then we want to try and go down.
       if (direction == LEFT and not current_room:can_go_left_from_here())
       or (direction == RIGHT and not current_room:can_go_right_from_here()) then
-	 --log('forced to go down')
 	 direction = DOWN	 
       end
 
@@ -164,15 +161,10 @@ level.generate = function(self)
       -- room and we're on the bottom level then we've
       -- reached the end of the path
       if direction == DOWN and not current_room:can_go_down_from_here() then
-	 --log('want to go down but cannot. marking '..current_room.room_number..' as exit')
 	 path_completed = true
 	 current_room.is_exit = true
 	 break
       end
-
-      -- if path_completed then
-      -- 	 log('path is completed but we are still processing?!')
-      -- end
       
       -- we're still in our loop so lets place a room
       -- what room number is it
@@ -185,8 +177,6 @@ level.generate = function(self)
 	 next_room_number = current_room.room_number + 4
       end
       
-      --log('picked next room number: '..next_room_number..'. the current room number is '..current_room.room_number)
-
       local next_room_type = LEFT_RIGHT_ROOM
       
       -- if we're going down then we need to make sure the
@@ -200,7 +190,6 @@ level.generate = function(self)
 	 else
 	    horizontal_direction = LEFT
 	 end
-	 --log('new horizontal direction is '..horizontal_direction)
       end
 
       -- we place the room and get ready to start again
@@ -208,9 +197,7 @@ level.generate = function(self)
 				  room_type = next_room_type})
       
       rooms[next_room.room_number] = next_room
-      --log('placed a room at '..next_room.room_number)
       current_room = next_room
-      --log('current_room is now '..current_room.room_number)
    end
    self.rooms = rooms
 end
@@ -227,6 +214,10 @@ room.new = function(init)
    self.can_go_right_from_here = room.can_go_right_from_here
    self.can_go_down_from_here = room.can_go_down_from_here
    self.draw = room.draw
+   self.x = init.x
+   self.y = init.y
+   self.w = 32
+   self.h = 32
    return self
 end
 
@@ -267,6 +258,7 @@ room.draw = function(self, xs, ys)
 	 y += 8
 	 x = xs
       end
+      print(self.room_number, self.x, self.y, 4)
    end
 end
 
@@ -278,7 +270,7 @@ pc.new = function(init)
    self.sprite = 3
    self.x = init.x or 10
    self.y = init.y or 10
-   self.speed = 3
+   self.speed = 2
    self.draw = pc.draw
    self.move = pc.move
    return self
@@ -349,28 +341,8 @@ end
 function _draw()
    cls()
    level:draw()
-   pc:draw()
-   
+   pc:draw()   
 end
-
--- function _init()
---    pc = pc.new()
---    -- spinner = robot.new({sprites={1,2}, delay=6, x=20, y=20})
---    -- sentry = robot.new({sprites={7,8,7,9}, delay=50, x=80, y=90})
--- end
-
--- function _update()
---    -- spinner:update()
---    -- sentry:update()
--- end
-
--- function _draw()
---    cls()
---    map(0,0,0,0,16,16)
---    pc:draw()
---    -- spinner:draw()
---    -- sentry:draw()
--- end
 
 __gfx__
 00000000000000000000000000aaa000000077000000000000082000005850000055800000855000008550000000000000000000000000000000000000000000

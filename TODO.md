@@ -1,6 +1,5 @@
 draw the path properly
 draw the bits that aren't on the path properly
-move our character
 proper art for our character
 don't allow character to move through walls
 put in robots
