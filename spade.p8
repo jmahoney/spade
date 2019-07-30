@@ -116,7 +116,10 @@ level.generate = function(self)
       
    local start_room = room.new({is_start = true,
 				room_number = start_room_number,
-				room_type = start_room_type})
+				room_type = start_room_type,
+				x = rooms[start_room_number]['x'],
+				y = rooms[start_room_number]['y']})
+      
    rooms[start_room_number] = start_room
 
    -- now we place the other rooms
@@ -141,7 +144,7 @@ level.generate = function(self)
       -- left, right, or down?
       local next_room_direction = pick_direction()
 
-      log('next room direction '..next_room_direction)
+      --log('next room direction '..next_room_direction)
       if next_room_direction == DOWN then
 	 direction = DOWN
       else
@@ -194,7 +197,9 @@ level.generate = function(self)
 
       -- we place the room and get ready to start again
       local next_room = room.new({room_number = next_room_number,
-				  room_type = next_room_type})
+				  room_type = next_room_type,
+				  x = rooms[next_room_number]['x'],
+				  y = rooms[next_room_number]['y']})
       
       rooms[next_room.room_number] = next_room
       current_room = next_room
@@ -204,7 +209,7 @@ end
 
 room = {}
 room.new = function(init)
-   init = init or {}
+   init = init or {}  
    local self = {}
    self.room_type = init.room_type
    self.is_start = false or init.is_start
