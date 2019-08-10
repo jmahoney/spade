@@ -364,11 +364,11 @@ pc.move = function(self)
       end
    end
 
-   if self.x+dx < 0 or self.x+dx > 128-self.w then
+   if self.x+dx < 8 or self.x+dx > 120-self.w then
       dx = 0
    end
 
-   if self.y+dy < 0 or self.y+dy > 128-self.h then
+   if self.y+dy < 8 or self.y+dy > 120-self.h then
       dy = 0
    end
    
