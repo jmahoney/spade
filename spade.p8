@@ -72,6 +72,16 @@ box_hit = function(x1,y1,
    return hit
 end
 
+inc_x_y = function(index, x_current, y_current,
+		   x_start,  x_increment, y_increment,
+		   modulo_check)
+   x_current += x_increment
+   if index % modulo_check == 0 then
+      y_current += y_increment
+      x_current = x_start
+   end
+   return x_current, y_current
+end
 
 -- objecty game element things
 level = {}
@@ -106,11 +116,7 @@ level.draw = function(self)
    local ys = 0 
    for i = 1, 16 do
       level.rooms[i]:draw(xs,ys)
-      xs += 32
-      if i % 4 == 0 then
-	 xs = 0
-	 ys += 32
-      end
+      xs,ys = inc_x_y(i, xs, ys, 0, 32, 32, 4)
    end
 end
 
