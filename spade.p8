@@ -272,28 +272,39 @@ room.draw = function(self, xs, ys)
 	 if i < 13 and x > 0 and x < 120 then
 	    spr(path_sprite, x, y)
 	 end
-	 
 	 x += 8
 	 if i % 4 == 0 then
 	    y += 8
 	    x = xs
 	 end
       end
+   elseif self.is_start then
+      for i = 1, 16 do
+	 if i == 1 or i == 4 then
+	    spr(non_path_sprite, x, y)
+	 elseif i > 1 and i < 4 then
+	    spr(37, x, y)
+	 else
+	    if x > 0 and x < 120 and y > 0 and y < 120 then
+	       spr(path_sprite, x, y)
+	    end	    
+	 end
+	 x += 8
+	 if i % 4 == 0 then
+	    y += 8
+	    x = xs
+	 end
+      end   
    else
       for i = 1, 16 do
 	 if self.room_type == SIDE_ROOM then
 	    spr(non_path_sprite, x, y)
 	 else
 	    if x > 0 and x < 120 and y > 0 and y < 120 then
-	       if self.is_start then
-		  spr(path_start_sprite, x, y)
-	       elseif self.is_exit then
-		  spr(path_end_sprite, x, y)
-	       else
-		  spr(path_sprite, x, y)
-	       end
-	    end
+	       spr(path_sprite, x, y)
+	    end	    
 	 end
+	 
 	 x += 8
 	 if i % 4 == 0 then
 	    y += 8
@@ -311,7 +322,7 @@ pc = {}
 pc.new = function(init)
    local self = {}
    self.sprite = 3
-   self.direction = LEFT
+   self.direction = DOWN
    self.x = init.x or 10
    self.y = init.y or 10
    self.w = 4
