@@ -127,11 +127,7 @@ level.generate = function(self)
    -- first lets fill our grid with filler rooms
    for i = 1, 16 do
       add(rooms, room.new({room_number = i, room_type = SIDE_ROOM, x = x, y = y}))
-      x += 32
-      if i % 4 == 0 then
-	 x = 0
-	 y += 32
-      end
+      x,y = inc_x_y(i, x, y, 0, 32, 32, 4)
    end
    
    -- first we put a room at one of the top rows
@@ -148,7 +144,6 @@ level.generate = function(self)
 
    -- now we place the other rooms
    
-
    -- where do we want to place the next room
    local direction = pick_direction()
    
@@ -174,7 +169,6 @@ level.generate = function(self)
       else
 	 direction = horizontal_direction
       end
-      --log('next actual direction '..direction)
            
       -- if we want to place it horizontally and
       -- we can't because the current room is on an edge
@@ -278,11 +272,7 @@ room.draw = function(self, xs, ys)
 	 if i < 13 and x > 0 and x < 120 then
 	    spr(path_sprite, x, y)
 	 end
-	 x += 8
-	 if i % 4 == 0 then
-	    y += 8
-	    x = xs
-	 end
+	 x,y = inc_x_y(i, x, y, xs, 8, 8, 4)
       end
    elseif self.is_start then
       for i = 1, 16 do
@@ -295,11 +285,7 @@ room.draw = function(self, xs, ys)
 	       spr(path_sprite, x, y)
 	    end	    
 	 end
-	 x += 8
-	 if i % 4 == 0 then
-	    y += 8
-	    x = xs
-	 end
+	 x,y = inc_x_y(i, x, y, xs, 8, 8, 4)
       end   
    else
       for i = 1, 16 do
@@ -309,18 +295,11 @@ room.draw = function(self, xs, ys)
 	    if x > 0 and x < 120 and y > 0 and y < 120 then
 	       spr(path_sprite, x, y)
 	    end	    
-	 end
-	 
-	 x += 8
-	 if i % 4 == 0 then
-	    y += 8
-	    x = xs
-	 end
+	 end	 
+	 x,y = inc_x_y(i, x, y, xs, 8, 8, 4)
       end
    end
 end
-
-
 
 -- our hero
 pc = {}
