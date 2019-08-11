@@ -86,13 +86,15 @@ end
 -- objecty game element things
 level = {}
 
-level.new = function()
+level.new = function(init)
+   init = init or {}
    local self = {}
+   self.room_number = init.room_number or 1
    self.rooms = {}
    self.draw = level.draw
    self.generate = level.generate
    self.spawn_coords = level.spawn_coords
-   self:generate()
+   self:generate(init.start_room)
    return self
 end
 
@@ -120,7 +122,7 @@ level.draw = function(self)
    end
 end
 
-level.generate = function(self)
+level.generate = function(self, s)
    local rooms = {}
    local x = 0
    local y = 0
@@ -131,7 +133,7 @@ level.generate = function(self)
    end
    
    -- first we put a room at one of the top rows
-   local start_room_number = flr(rnd(4)+1)
+   local start_room_number = s or flr(rnd(4)+1)
    local start_room_type = flr(rnd(2)+1)
       
    local start_room = room.new({is_start = true,
