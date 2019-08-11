@@ -9,7 +9,7 @@ But practice makes things better and I am practicing.
 Practicing what, exactly? 
 
 * Having an idea and starting it
-* Finighing what I started 
+* Finishing what I started 
 * Putting things on a screen, taking input, making the things do things, maybe even sounds
 
 Spade is eventually going to be a Shamus like game with automatically generated levels.
