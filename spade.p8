@@ -89,12 +89,13 @@ level = {}
 level.new = function(init)
    init = init or {}
    local self = {}
-   self.room_number = init.room_number or 1
+   self.level_number = init.level_number or 1
    self.rooms = {}
+   self.exit_room_number = 0
    self.draw = level.draw
    self.generate = level.generate
    self.spawn_coords = level.spawn_coords
-   self:generate(init.start_room)
+   self:generate(self.level_number, init.start_room)
    return self
 end
 
@@ -122,21 +123,22 @@ level.draw = function(self)
    end
 end
 
-level.generate = function(self, s)
+level.generate = function(self, level_number, start_room_number)
    local rooms = {}
    local x = 0
    local y = 0
    -- first lets fill our grid with filler rooms
    for i = 1, 16 do
-      add(rooms, room.new({room_number = i, room_type = SIDE_ROOM, x = x, y = y}))
+      add(rooms, room.new({level_number = level_number, room_number = i, room_type = SIDE_ROOM, x = x, y = y}))
       x,y = inc_x_y(i, x, y, 0, 32, 32, 4)
    end
    
    -- first we put a room at one of the top rows
-   local start_room_number = s or flr(rnd(4)+1)
+   start_room_number = start_room_number or flr(rnd(4)+1)
    local start_room_type = flr(rnd(2)+1)
       
    local start_room = room.new({is_start = true,
+				level_number = level_number,
 				room_number = start_room_number,
 				room_type = start_room_type,
 				x = rooms[start_room_number]['x'],
@@ -186,6 +188,7 @@ level.generate = function(self, s)
       if direction == DOWN and not current_room:can_go_down_from_here() then
 	 path_completed = true
 	 current_room.is_exit = true
+	 self.exit_room_number = current_room.room_number
 	 break
       end
       
@@ -216,7 +219,8 @@ level.generate = function(self, s)
       end
 
       -- we place the room and get ready to start again
-      local next_room = room.new({room_number = next_room_number,
+      local next_room = room.new({level_number = level_number,
+				  room_number = next_room_number,
 				  room_type = next_room_type,
 				  x = rooms[next_room_number]['x'],
 				  y = rooms[next_room_number]['y']})
@@ -232,8 +236,9 @@ room.new = function(init)
    init = init or {}  
    local self = {}
    self.room_type = init.room_type
-   self.is_start = false or init.is_start
-   self.is_exit = false or init.is_exit
+   self.is_start = init.is_start or false
+   self.is_exit = init.is_exit or false
+   self.level_number = init.level_number
    self.room_number = init.room_number
    self.can_go_left_from_here = room.can_go_left_from_here
    self.can_go_right_from_here = room.can_go_right_from_here
@@ -277,16 +282,21 @@ room.draw = function(self, xs, ys)
 	 x,y = inc_x_y(i, x, y, xs, 8, 8, 4)
       end
    elseif self.is_start then
-      for i = 1, 16 do
+      for i = 1, 16 do	 
 	 if i == 1 or i == 4 then
-	    spr(non_path_sprite, x, y)
-	 elseif i > 1 and i < 4 then
-	    spr(37, x, y)
-	 else
-	    if x > 0 and x < 120 and y > 0 and y < 120 then
-	       spr(path_sprite, x, y)
+	    spr(non_path_sprite, x, y)	  
+	 elseif  i > 1 and i < 4 then
+	    if self.level_number == 1 then
+	       spr(non_path_sprite, x, y)
+	    else	     
+	       spr(37, x, y)
 	    end	    
 	 end
+	 
+	 if x > 0 and x < 120 and y > 0 and y < 120 then
+	    spr(path_sprite, x, y)
+	 end
+	 
 	 x,y = inc_x_y(i, x, y, xs, 8, 8, 4)
       end   
    else
@@ -431,9 +441,12 @@ robot.draw = function(self)
 end
 
 -- game loop foo
-
+levels = {}
 function _init()
-   level = level.new()
+   for i = 1, 10 do
+      add(levels, level.new({level_number = i}))
+   end
+   level = levels[6]
    local pc_xs, pc_ys = level:spawn_coords()
    pc = pc.new({x = pc_xs, y = pc_ys})
 end
