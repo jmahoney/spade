@@ -455,19 +455,37 @@ robot.draw = function(self)
    spr(self.sprites[self.sprite_index], self.x, self.y)
 end
 
+select_level = function(pc)
+   local level_number = level.level_number
+   if pc.y < 4 and level.level_number > 1 then
+      level_number -= 1
+      level = levels[level_number]
+      pc.y = 120
+   end
+   if pc.y > 124 then
+      level_number += 1
+      if level_number <= 10 then
+	 level = levels[level_number]
+	 pc.y = 8
+      end
+   end
+end
+
+
 -- game loop foo
 levels = {}
 function _init()
    for i = 1, 10 do
       add(levels, level.new({level_number = i}))
    end
-   level = levels[2]
+   level = levels[1]
    local pc_xs, pc_ys = level:spawn_coords()
    pc = pc.new({x = pc_xs, y = pc_ys})
 end
 
 function _update()
    pc:move()
+   select_level(pc)
 end
 
 function _draw()
