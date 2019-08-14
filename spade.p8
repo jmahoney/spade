@@ -104,7 +104,8 @@ end
 
 level.door_coords = function(self)
    local start_x = 0
-   if self.level_number > 0 then
+   
+   if self.level_number > 1 then
       start_x = self:start_room()['x'] + 8
    end
    local exit_x = self:exit_room()['x'] + 8
@@ -369,19 +370,32 @@ pc.move = function(self)
 	 self.direction = DOWN
       end
    end
-
    
    -- the outer walls are drawn on the map
    -- so we check for them specially
    if self.x+dx < 8 or self.x+dx > 120-self.w then
       dx = 0
    end
-
-   if self.y+dy < 8 or self.y+dy > 120-self.h then
-      dy = 0
+   
+   local start_door_x, exit_door_x = level:door_coords()
+   
+   if self.y+dy < 8 then
+      if (start_door_x == 0)
+	 or self.x < start_door_x
+	 or self.x+self.w > start_door_x+16
+      then
+	 dy = 0
+      end
    end
    
-      
+   if self.y+dy > 120-self.h then
+      if self.x < exit_door_x
+	 or self.x+self.w > exit_door_x+16
+      then
+	 dy = 0
+      end
+   end
+   
    if dx != 0 or dy != 0 then
       for room in all(level.rooms) do
 	 if room.room_type == SIDE_ROOM then
@@ -447,7 +461,7 @@ function _init()
    for i = 1, 10 do
       add(levels, level.new({level_number = i}))
    end
-   level = levels[6]
+   level = levels[2]
    local pc_xs, pc_ys = level:spawn_coords()
    pc = pc.new({x = pc_xs, y = pc_ys})
 end
