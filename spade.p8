@@ -106,7 +106,9 @@ level.door_coords = function(self)
    local start_x = 0
    
    if self.level_number > 1 then
-      start_x = self:start_room()['x'] + 8
+      local sr = self:start_room()
+     
+      start_x = sr['x'] + 8
    end
    local exit_x = self:exit_room()['x'] + 8
 
@@ -122,6 +124,7 @@ end
 
 level.start_room = function(self)
    for i = 1, 4 do
+      --log(self.rooms[i].room_number)
       if self.rooms[i].is_start then
 	 return self.rooms[i]
       end
@@ -146,7 +149,6 @@ level.draw = function(self)
 end
 
 level.generate = function(self, level_number, start_room_number)
-   log(start_room_number)
    local rooms = {}
    local x = 0
    local y = 0
@@ -169,7 +171,7 @@ level.generate = function(self, level_number, start_room_number)
 				y = rooms[start_room_number]['y']})
       
    rooms[start_room_number] = start_room
-
+   -- log('the level number is '..level_number..' and the start room is '..start_room_number)
    -- now we place the other rooms
    
    -- where do we want to place the next room
@@ -288,6 +290,7 @@ room.can_go_down_from_here = function(self)
 end
 
 room.draw = function(self, xs, ys)
+   --log('level '..level.level_number)
    local path_sprite = 32
    local non_path_sprite = 33
    local path_start_sprite = 34
@@ -480,11 +483,21 @@ function _init()
    local l = level.new({level_number = 1})
    add(levels, l)
    local exit_room = l:exit_room()
+   local start_room = l:start_room()
    for i = 2, 10 do
-      l = level.new({level_number = i, start_room_number = exit_room.room_number})
+      log(exit_room.room_number)
+      log(start_room_room_number)
+      l = level.new({level_number = i, start_room_number = exit_room.room_number-12})
       exit_room = l:exit_room()
+      
       add(levels, l)
    end
+   -- for i = 1, 10 do
+   --    local ll = levels[i]
+   --    local c1, c2 = ll:spawn_coords()
+   --    log(c1..' '..c2)
+   -- end
+   
    level = levels[1]
    local pc_xs, pc_ys = level:spawn_coords()
    pc = pc.new({x = pc_xs, y = pc_ys})
