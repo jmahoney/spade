@@ -98,7 +98,7 @@ level.new = function(init)
    self.start_room = level.start_room
    self.exit_room = level.exit_room
    self.door_coords = level.door_coords
-   self:generate(self.level_number, init.start_room)
+   self:generate(self.level_number, init.start_room_number)
    return self
 end
 
@@ -146,6 +146,7 @@ level.draw = function(self)
 end
 
 level.generate = function(self, level_number, start_room_number)
+   log(start_room_number)
    local rooms = {}
    local x = 0
    local y = 0
@@ -157,6 +158,7 @@ level.generate = function(self, level_number, start_room_number)
    
    -- first we put a room at one of the top rows
    start_room_number = start_room_number or flr(rnd(4)+1)
+   
    local start_room_type = flr(rnd(2)+1)
       
    local start_room = room.new({is_start = true,
@@ -475,8 +477,13 @@ end
 -- game loop foo
 levels = {}
 function _init()
-   for i = 1, 10 do
-      add(levels, level.new({level_number = i}))
+   local l = level.new({level_number = 1})
+   add(levels, l)
+   local exit_room = l:exit_room()
+   for i = 2, 10 do
+      l = level.new({level_number = i, start_room_number = exit_room.room_number})
+      exit_room = l:exit_room()
+      add(levels, l)
    end
    level = levels[1]
    local pc_xs, pc_ys = level:spawn_coords()
