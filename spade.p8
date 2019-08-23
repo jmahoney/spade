@@ -469,7 +469,7 @@ select_level = function(pc)
    end
    if pc.y > 124 then
       level_number += 1
-      if level_number <= 10 then
+      if level_number <= #levels then
 	 level = levels[level_number]
 	 pc.y = 8
       end
@@ -484,7 +484,7 @@ function _init()
    add(levels, l)
    local exit_room = l:exit_room()
    local start_room = l:start_room()
-   for i = 2, 10 do
+   for i = 2, 30 do
       log(exit_room.room_number)
       log(start_room_room_number)
       l = level.new({level_number = i, start_room_number = exit_room.room_number-12})
@@ -492,11 +492,6 @@ function _init()
       
       add(levels, l)
    end
-   -- for i = 1, 10 do
-   --    local ll = levels[i]
-   --    local c1, c2 = ll:spawn_coords()
-   --    log(c1..' '..c2)
-   -- end
    
    level = levels[1]
    local pc_xs, pc_ys = level:spawn_coords()
