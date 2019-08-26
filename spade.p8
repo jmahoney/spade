@@ -383,13 +383,20 @@ pc.move = function(self)
    end
    
    local start_door_x, exit_door_x = level:door_coords()
-   
+
+
+   -- allow the pc to walk through the doors
    if self.y+dy < 8 then
-      if (start_door_x == 0)
+      if start_door_x == 0
 	 or self.x < start_door_x
 	 or self.x+self.w > start_door_x+16
       then
 	 dy = 0
+      else -- but not the walls beside the doors
+	 if self.x+dx < start_door_x
+	 or self.x+self.w+dx > start_door_x+16 then
+	    dx = 0
+	 end	 
       end
    end
    
@@ -398,6 +405,11 @@ pc.move = function(self)
 	 or self.x+self.w > exit_door_x+16
       then
 	 dy = 0
+      else
+	 if self.x+dx < exit_door_x
+	 or self.x+self.w+dx > exit_door_x+16 then
+	    dx = 0
+	 end	 
       end
    end
    
