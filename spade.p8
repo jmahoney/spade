@@ -91,12 +91,14 @@ level.new = function(init)
    local self = {}
    self.level_number = init.level_number or 1
    self.rooms = {}
+   self.robots = {}
    self.exit_room_number = 0
    self.start_room_number = 0
    self.draw = level.draw
+   self.update = level.update
    self.generate = level.generate
    self.generate_rooms = level.generate_rooms
-   self.populate_robots = level.populate_rooms
+   self.populate_robots = level.populate_robots
    self.populate_keys = level.populate_keys
    self.spawn_coords = level.spawn_coords
    self.start_room = level.start_room
@@ -138,13 +140,24 @@ level.draw = function(self)
    local xs = 0
    local ys = 0 
    for i = 1, 16 do
-      level.rooms[i]:draw(xs,ys)
+      self.rooms[i]:draw(xs,ys)
       xs,ys = inc_x_y(i, xs, ys, 0, 32, 32, 4)
+   end
+   for r in all(self.robots) do
+      r:draw()
    end
 end
 
+level.update = function(self)
+   for r in all(self.robots) do
+      r:animate()
+   end
+end
+
+
 level.generate = function(self, level_number, start_room_number)
    self:generate_rooms(level_number, start_room_number)
+   self:populate_robots()
 end
 
 level.generate_rooms = function(self, level_number, start_room_number)
@@ -258,7 +271,12 @@ level.generate_rooms = function(self, level_number, start_room_number)
 end
 
 level.populate_robots = function(self)
-   
+   -- just put a robot outside the exit
+   local exit_room = self:exit_room()
+   local x = exit_room.x+12
+   local y = exit_room.y+10
+   local robot = robot.new({x=x, y=y, sprites = {7,8,7,9}})
+   add(self.robots, robot)
 end
 
 level.populate_keys = function(self)
@@ -481,7 +499,7 @@ robot.draw = function(self)
    spr(self.sprites[self.sprite_index], self.x, self.y)
 end
 
-select_level = function(pc)
+maybe_change_level = function(pc)
    local level_number = level.level_number
    if pc.y < 4 and level.level_number > 1 then
       level_number -= 1
@@ -521,7 +539,8 @@ end
 
 function _update()
    pc:move()
-   select_level(pc)
+   level:update() 
+   maybe_change_level(pc)
 end
 
 function _draw()
