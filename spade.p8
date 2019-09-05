@@ -92,8 +92,12 @@ level.new = function(init)
    self.level_number = init.level_number or 1
    self.rooms = {}
    self.exit_room_number = 0
+   self.start_room_number = 0
    self.draw = level.draw
    self.generate = level.generate
+   self.generate_rooms = level.generate_rooms
+   self.populate_robots = level.populate_rooms
+   self.populate_keys = level.populate_keys
    self.spawn_coords = level.spawn_coords
    self.start_room = level.start_room
    self.exit_room = level.exit_room
@@ -123,20 +127,11 @@ level.spawn_coords = function(self)
 end
 
 level.start_room = function(self)
-   for i = 1, 4 do
-      --log(self.rooms[i].room_number)
-      if self.rooms[i].is_start then
-	 return self.rooms[i]
-      end
-   end
+   return self.rooms[self.start_room_number]
 end
 
 level.exit_room = function(self)
-   for i = 13, 16 do
-      if self.rooms[i].is_exit then
-	 return self.rooms[i]
-      end
-   end
+   return self.rooms[self.exit_room_number]
 end
 
 level.draw = function(self)
@@ -149,6 +144,10 @@ level.draw = function(self)
 end
 
 level.generate = function(self, level_number, start_room_number)
+   self:generate_rooms(level_number, start_room_number)
+end
+
+level.generate_rooms = function(self, level_number, start_room_number)
    local rooms = {}
    local x = 0
    local y = 0
@@ -160,6 +159,7 @@ level.generate = function(self, level_number, start_room_number)
    
    -- first we put a room at one of the top rows
    start_room_number = start_room_number or flr(rnd(4)+1)
+   self.start_room_number = start_room_number
    
    local start_room_type = flr(rnd(2)+1)
       
@@ -256,6 +256,15 @@ level.generate = function(self, level_number, start_room_number)
    end
    self.rooms = rooms
 end
+
+level.populate_robots = function(self)
+   
+end
+
+level.populate_keys = function(self)
+
+end
+
 
 room = {}
 room.new = function(init)
