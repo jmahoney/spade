@@ -356,6 +356,8 @@ pc.new = function(init)
    self.w = 4
    self.h = 8
    self.speed = 2
+   self.can_move = pc.can_move
+   self.is_firing = pc.is_firing
    self.draw = pc.draw
    self.move = pc.move
    self.touching_robot = false
@@ -378,6 +380,17 @@ pc.draw = function(self)
    
    spr(self.sprite, self.x, self.y)
 end
+
+pc.is_firing = function(self)
+   return btn(4) and (btn(0) or btn(1) or btn(2) or btn(3))
+end
+
+
+pc.can_move = function(self)
+   return (btn(0) or btn(1) or btn(2) or btn(3))
+      and not self:is_firing() 
+end
+
 
 pc.move = function(self, current_level)
    local dx = 0
@@ -566,9 +579,20 @@ function _init()
 end
 
 function _update()
-   pc:move(level)
-   level:update() 
+   -- let the pc move and get out of the level before the robots do anything
+   if pc:can_move() then pc:move(level) end
    maybe_change_level(pc)
+
+   -- handle the player shooting next
+
+   -- move the bullets
+
+   -- move the robots
+
+   -- animate the robots next
+   for r in all(level.robots) do
+      r:animate()
+   end
 end
 
 function _draw()
