@@ -102,6 +102,48 @@ end
 
 
 -- # Game objects/entities
+bullet = {}
+bullet.new = function(init)
+   init = init or {}
+   local self = {}
+   self.sprite = init.sprite or 20
+   self.x = init.x
+   self.y = init.y
+   self.w = init.w or 1
+   self.h = init.h or 1
+   self.direction = init.direction
+   self.speed = 3
+   self.draw = bullet.draw
+   self.update = bullet.update
+   return self
+end
+
+bullet.draw = function(self)
+   spr(self.sprite, self.x, self.y)
+end
+
+bullet.update = function(self, current_level, index)
+   local dx = 0
+   local dy = 0
+   if self.direction == UP then
+      dy = -self.speed
+   elseif self.direction == DOWN then
+      dy = self.speed
+   elseif self.direction == LEFT then
+      dx = -self.speed
+   else
+      dx = self.speed
+   end
+
+   dx, dy = check_door_collisions(current_lvel, dx, dy,
+			    self.x, self.y, self.w, self.h)
+
+   if dx == 0 and dy == 0 then
+      del(current_level.bullets, self)
+   end
+end
+
+
 level = {} -- initialise a global variable representing the current level
 
 -- create and initialise a new game level
@@ -112,6 +154,7 @@ level.new = function(init)
    self.level_number = init.level_number or 1
    self.rooms = {}
    self.robots = {}
+   self.bullets = {}
    self.exit_room_number = 0
    self.start_room_number = 0
    self.draw = level.draw
@@ -172,6 +215,9 @@ level.draw = function(self)
    for r in all(self.robots) do
       r:draw()
    end
+   for b in all(self.bullets) do
+      b:draw()
+   end
 end
 
 -- compute 
@@ -179,6 +225,11 @@ level.update = function(self)
    for r in all(self.robots) do
       r:animate()
    end
+
+   for b in all(self.bullets) do
+      b:update()
+   end
+   
 end
 
 -- create all the things in a level
@@ -391,10 +442,13 @@ pc.new = function(init)
    self.h = 8
    self.speed = 2
    self.touching_robot = false
+   self.firing_delay = 0
    self.can_move = pc.can_move
    self.draw = pc.draw
    self.is_firing = pc.is_firing
    self.move = pc.move
+   self.shoot = pc.shoot
+   self.update = pc.update
    return self
 end
 
@@ -453,6 +507,34 @@ pc.move = function(self, current_level)
    self.x += dx
    self.y += dy
 end
+
+-- create a bullet fired by the player character
+pc.shoot = function(self, current_level)
+   local bullets = current_level.bullets
+
+   if #current_level.bullets > 0
+      or self.firing_delay > 0
+      or not self.is_firing() then
+	 return
+   end
+
+   log("creating bullet "..#bullets)
+   local b = bullet.new(
+      {x = self.x, y = self.y, direction = self.direction})
+
+  
+   add(current_level.bullets, b)
+   log("bullet count "..#bullets)
+   self.firing_delay = 20
+end
+
+-- update the player character's state
+pc.update = function(self, current_level)
+   if self.firing_delay > 0 then self.firing_delay -= 1 end
+   self:move(current_level)
+   self:shoot(current_level)
+end
+
 
 -- get change in x&y coords and the direction the player character is facing
 handle_direction_key_press = function(speed, direction)
@@ -616,8 +698,6 @@ function _init()
    local exit_room = l:exit_room()
    local start_room = l:start_room()
    for i = 2, 30 do
-      log(exit_room.room_number)
-      log(start_room_room_number)
       l = level.new({level_number = i, start_room_number = exit_room.room_number-12})
       exit_room = l:exit_room()
       
@@ -632,15 +712,10 @@ end
 -- update game state
 function _update()
    -- let the pc move and get out of the level before the robots do anything
-   pc:move(level)
+   pc:update(level)
    maybe_change_level(pc)
 
-   -- handle the player shooting
    
-   -- move the bullets
-   
-   -- move the robots
-
    -- do the robot animations
    for r in all(level.robots) do
       r:animate()
