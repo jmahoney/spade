@@ -2,21 +2,28 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 
+-- spade.p8
+-- copyright 2019 Joe Mahoney
 
--- global constants
-DEBUG = true
 
-SIDE_ROOM = 0
-LEFT_RIGHT_ROOM = 1
-LEFT_RIGHT_BOTTOM_ROOM = 2
-LEFT_RIGHT_TOP_ROOM = 3
+-- # Global constants
+-- we might use these anywhere in the application
 
+DEBUG = true -- determines whether we are in debug mode or not
+
+-- ## Types rooms that appear in the map
+SIDE_ROOM = 0 -- a room that has no entrances
+LEFT_RIGHT_ROOM = 1 -- a room that has entrances on the left and right
+LEFT_RIGHT_BOTTOM_ROOM = 2 -- a room that has entrances on the left, right, and bottom
+LEFT_RIGHT_TOP_ROOM = 3 -- a room that has entrances on the left, right, and top
+
+-- ## Direction contants
 LEFT = 0
 RIGHT = 1
 DOWN = 2
 UP = 3
 
--- useful functions
+-- Logs messages if debug mode is turned on
 log = function(msg)
    if DEBUG then
       printh(msg)
@@ -24,6 +31,7 @@ log = function(msg)
    
 end
 
+-- Determines if a value is in a sequence. There's no stdlib to help us with this
 is_in_seq = function(n, seq)
    local found = false
    foreach(seq, function(i)
@@ -34,6 +42,11 @@ is_in_seq = function(n, seq)
    return found
 end
 
+
+-- Determines what sprite will be drawn for a game entity that has more than one sprite.
+-- Rotates through a list of sprites based on a specified delay based on the number of frames
+-- current_index is the current sprite, delay is the number of frames to show the sprite, current_delay
+-- is how many sprites are left
 cycle_sprites = function(sprites, current_index, delay, current_delay)
    local next_index = current_index
    local next_delay = current_delay
@@ -46,6 +59,7 @@ cycle_sprites = function(sprites, current_index, delay, current_delay)
    return next_index, next_delay
 end
 
+-- pick a direction to go next. Used by map generation. Maps are generated from top to bottom.
 function pick_direction()
    local r = flr(rnd(5)+1)
 
@@ -54,6 +68,8 @@ function pick_direction()
    return RIGHT
 end
 
+
+-- determines if one thing collides with another
 box_hit = function(x1,y1,
 		   w1,h1,
 		   x2,y2,
@@ -72,6 +88,7 @@ box_hit = function(x1,y1,
    return hit
 end
 
+-- determines what the next x, y coords should be.  Used for room generation, left to right, top to bottom
 inc_x_y = function(index, x_current, y_current,
 		   x_start,  x_increment, y_increment,
 		   modulo_check)
@@ -83,9 +100,12 @@ inc_x_y = function(index, x_current, y_current,
    return x_current, y_current
 end
 
--- objecty game element things
-level = {}
 
+-- # Game objects/entities
+level = {} -- initialise a global variable representing the current level
+
+-- create and initialise a new game level
+-- levels contain rooms, robots, bullets
 level.new = function(init)
    init = init or {}
    local self = {}
@@ -99,7 +119,6 @@ level.new = function(init)
    self.generate = level.generate
    self.generate_rooms = level.generate_rooms
    self.populate_robots = level.populate_robots
-   self.populate_keys = level.populate_keys
    self.spawn_coords = level.spawn_coords
    self.start_room = level.start_room
    self.exit_room = level.exit_room
@@ -108,6 +127,8 @@ level.new = function(init)
    return self
 end
 
+-- determine where the x coords of the start and exit doors are.
+-- level 1 doesn't have a start door
 level.door_coords = function(self)
    local start_x = 0
    
@@ -121,6 +142,8 @@ level.door_coords = function(self)
    return start_x, exit_x
 end
 
+-- determine where the player spawns
+-- spoiler alert it's near the top centre of the start room
 level.spawn_coords = function(self)
    local start_room = self:start_room()
    local xs = start_room.x+14
@@ -128,14 +151,17 @@ level.spawn_coords = function(self)
    return xs, xy
 end
 
+-- get the start room of a level
 level.start_room = function(self)
    return self.rooms[self.start_room_number]
 end
 
+-- get the exit room of a level
 level.exit_room = function(self)
    return self.rooms[self.exit_room_number]
 end
 
+-- draw the level on the screen
 level.draw = function(self)
    local xs = 0
    local ys = 0 
@@ -148,18 +174,22 @@ level.draw = function(self)
    end
 end
 
+-- compute 
 level.update = function(self)
    for r in all(self.robots) do
       r:animate()
    end
 end
 
-
+-- create all the things in a level
 level.generate = function(self, level_number, start_room_number)
    self:generate_rooms(level_number, start_room_number)
    self:populate_robots()
 end
 
+-- create the rooms in a level. oh boy.
+-- this is mostly based on the spelunky algorithm
+-- as described by Darius Kazemi http://tinysubversions.com/spelunkyGen/
 level.generate_rooms = function(self, level_number, start_room_number)
    local rooms = {}
    local x = 0
@@ -270,6 +300,7 @@ level.generate_rooms = function(self, level_number, start_room_number)
    self.rooms = rooms
 end
 
+-- create all the robots in a level
 level.populate_robots = function(self)
    -- just put a robot outside the exit
    local exit_room = self:exit_room()
@@ -279,12 +310,10 @@ level.populate_robots = function(self)
    add(self.robots, robot)
 end
 
-level.populate_keys = function(self)
 
-end
+room = {} -- initialise a variable for a room. We don't directly use this, but lua needs it
 
-
-room = {}
+-- create and initialise a new room
 room.new = function(init)
    init = init or {}  
    local self = {}
@@ -304,20 +333,23 @@ room.new = function(init)
    return self
 end
 
+-- determine if the level generation algorithm can place a room to the left of this one
 room.can_go_left_from_here = function(self)
    if is_in_seq(self.room_number, {1,5,9,13}) then return false else return true end
 end
 
+-- determine if the level generation algorithm can place a room to the right of this one
 room.can_go_right_from_here = function(self)
    if is_in_seq(self.room_number, {4,8,12,16}) then return false else return true end
 end
 
+-- determine if the level generation algorithm can place a room below this one
 room.can_go_down_from_here = function(self)
    if is_in_seq(self.room_number, {13,14,15,16}) then return false else return true end
 end
 
+-- draw the room on the screen
 room.draw = function(self, xs, ys)
-   --log('level '..level.level_number)
    local path_sprite = 32
    local non_path_sprite = 33
    local path_start_sprite = 34
@@ -344,9 +376,11 @@ room.draw = function(self, xs, ys)
    end
 end
 
--- our hero
-pc = {}
+-- # Player character object/entity
+pc = {} -- initalise a global variable for the player character
 
+
+-- create and initialise the player character
 pc.new = function(init)
    local self = {}
    self.sprite = 3
@@ -356,14 +390,16 @@ pc.new = function(init)
    self.w = 4
    self.h = 8
    self.speed = 2
-   self.can_move = pc.can_move
-   self.is_firing = pc.is_firing
-   self.draw = pc.draw
-   self.move = pc.move
    self.touching_robot = false
+   self.can_move = pc.can_move
+   self.draw = pc.draw
+   self.is_firing = pc.is_firing
+   self.move = pc.move
    return self
 end
 
+-- draw the player character on the screen
+-- there are four different sprites we show depending on the direction
 pc.draw = function(self)
    if self.direction == LEFT then
       self.sprite = 38
@@ -381,18 +417,23 @@ pc.draw = function(self)
    spr(self.sprite, self.x, self.y)
 end
 
+-- determine if the player characters coordinates could change
+pc.can_move = function(self)
+   return (btn(0) or btn(1) or btn(2) or btn(3))
+      and not self:is_firing()
+      and not self.touching_robot
+end
+
+-- determine the player character is trying to shoot
 pc.is_firing = function(self)
    return btn(4) and (btn(0) or btn(1) or btn(2) or btn(3))
 end
 
-
-pc.can_move = function(self)
-   return (btn(0) or btn(1) or btn(2) or btn(3))
-      and not self:is_firing() 
-end
-
-
+-- move the player character
 pc.move = function(self, current_level)
+   if not self:can_move() then
+      return
+   end
    local dx = 0
    local dy = 0
 
@@ -413,6 +454,7 @@ pc.move = function(self, current_level)
    self.y += dy
 end
 
+-- get change in x&y coords and the direction the player character is facing
 handle_direction_key_press = function(speed, direction)
    local dx = 0
    local dy = 0
@@ -441,6 +483,7 @@ handle_direction_key_press = function(speed, direction)
    return dx, dy, direction
 end
 
+-- determine if the player character will collide with walls
 check_door_collisions = function(current_level, dx, dy, x, y, w, h)
    -- the outer walls are drawn on the map
    -- so we check for them specially
@@ -502,14 +545,16 @@ check_door_collisions = function(current_level, dx, dy, x, y, w, h)
    return dx, dy
 end
 
+-- check if the player character is colliding with any robots
 check_robot_collisions = function(current_level, dx, dy, x, y, w, h
 )
   return dx, dy, false
 end
 
--- generic robot
-robot = {}
+-- # robots
+robot = {} -- initialise a global variable for a robot. We never actually use this.
 
+-- create and initialise a new robot
 robot.new = function(init)
    init = init or {}
    local self = {}
@@ -526,20 +571,25 @@ robot.new = function(init)
    return self
 end
 
+-- update the state of a robot
 robot.update = function(self)
    self:animate()
 end
 
+-- update animation state of a robot
 robot.animate = function(self)
    self.sprite_index, self.current_delay =
       cycle_sprites(self.sprites, self.sprite_index,
 		    self.delay, self.current_delay)
 end
 
+-- draw a robot on the screen
 robot.draw = function(self)
    spr(self.sprites[self.sprite_index], self.x, self.y)
 end
 
+-- determine if the player character has walked through a door and
+-- set the current level as appropriate
 maybe_change_level = function(pc)
    local level_number = level.level_number
    if pc.y < 4 and level.level_number > 1 then
@@ -556,9 +606,10 @@ maybe_change_level = function(pc)
    end
 end
 
+levels = {} -- initialise a global variable that will contain all the game levels
 
--- game loop foo
-levels = {}
+-- initialise the game
+-- generates all the levels and creates the player character
 function _init()
    local l = level.new({level_number = 1})
    add(levels, l)
@@ -578,23 +629,25 @@ function _init()
    pc = pc.new({x = pc_xs, y = pc_ys})
 end
 
+-- update game state
 function _update()
    -- let the pc move and get out of the level before the robots do anything
-   if pc:can_move() then pc:move(level) end
+   pc:move(level)
    maybe_change_level(pc)
 
-   -- handle the player shooting next
-
+   -- handle the player shooting
+   
    -- move the bullets
-
+   
    -- move the robots
 
-   -- animate the robots next
+   -- do the robot animations
    for r in all(level.robots) do
       r:animate()
    end
 end
 
+-- draw all the things
 function _draw()
    cls()
    map(0,0,0,0,16,16)
@@ -611,8 +664,8 @@ __gfx__
 00700700000800000800080006600000000055509000000900202200060006000600060006000600000660000000000000000000000000000000000000000000
 00000000000000000000000009900000000000009000000900200200080008000800080008000800000680000000000000000000000000000000000000000000
 00000000000000000000000009900000000000009000000900800800000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000800000007070000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000707000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00700700007007000070070000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00077000000770000007700000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00077000000770000007700000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
