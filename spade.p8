@@ -112,7 +112,7 @@ bullet.new = function(init)
    self.w = init.w or 1
    self.h = init.h or 1
    self.direction = init.direction
-   self.speed = 3
+   self.speed = 4
    self.draw = bullet.draw
    self.update = bullet.update
    return self
@@ -518,7 +518,7 @@ end
 pc.shoot = function(self, current_level)
    local bullets = current_level.bullets
 
-   if #current_level.bullets > 3
+   if #current_level.bullets > 2
       or self.firing_delay > 0
       or not self.is_firing() then
 	 return
@@ -531,7 +531,7 @@ pc.shoot = function(self, current_level)
   
    add(current_level.bullets, b)
    log("bullet count "..#bullets)
-   self.firing_delay = 20
+   self.firing_delay = 10
 end
 
 -- update the player character's state
