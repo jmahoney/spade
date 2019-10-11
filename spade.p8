@@ -122,7 +122,7 @@ bullet.draw = function(self)
    spr(self.sprite, self.x, self.y)
 end
 
-bullet.update = function(self, current_level, index)
+bullet.update = function(self, current_level)
    local dx = 0
    local dy = 0
    if self.direction == UP then
@@ -135,12 +135,18 @@ bullet.update = function(self, current_level, index)
       dx = self.speed
    end
 
-   dx, dy = check_door_collisions(current_lvel, dx, dy,
+   dx, dy = check_door_collisions(current_level, dx, dy,
 			    self.x, self.y, self.w, self.h)
 
+   --log('dx: '..dx..' dy: '..dy)
    if dx == 0 and dy == 0 then
       del(current_level.bullets, self)
+   else
+      self.x += dx
+      self.y += dy
    end
+
+   --log('x: '..self.x..' y: '..self.y)
 end
 
 
@@ -225,9 +231,9 @@ level.update = function(self)
    for r in all(self.robots) do
       r:animate()
    end
-
+   
    for b in all(self.bullets) do
-      b:update()
+      b:update(self)
    end
    
 end
@@ -512,7 +518,7 @@ end
 pc.shoot = function(self, current_level)
    local bullets = current_level.bullets
 
-   if #current_level.bullets > 0
+   if #current_level.bullets > 3
       or self.firing_delay > 0
       or not self.is_firing() then
 	 return
@@ -715,11 +721,8 @@ function _update()
    pc:update(level)
    maybe_change_level(pc)
 
+   level:update()
    
-   -- do the robot animations
-   for r in all(level.robots) do
-      r:animate()
-   end
 end
 
 -- draw all the things
