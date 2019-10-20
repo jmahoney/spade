@@ -491,14 +491,18 @@ end
 
 -- move the player character
 pc.move = function(self, current_level)
-   if not self:can_move() then
-      return
-   end
    local dx = 0
    local dy = 0
 
+   -- we change direction even if we're not moving because it works better for shooting
    dx, dy, self.direction =
       handle_direction_key_press(self.speed, self.direction)
+
+
+   if not self:can_move() then
+      return
+   end
+  
    
    dx, dy = check_wall_collisions(current_level, dx, dy,
 				  self.x, self.y,
