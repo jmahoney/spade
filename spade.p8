@@ -135,10 +135,10 @@ bullet.update = function(self, current_level)
       dx = self.speed
    end
 
-   dx, dy = check_door_collisions(current_level, dx, dy,
-			    self.x, self.y, self.w, self.h)
+   dx, dy = check_wall_collisions(current_level, dx, dy,
+			    self.x, self.y, self.w, self.h, false)
 
-   --log('dx: '..dx..' dy: '..dy)
+   log('dx: '..dx..' dy: '..dy)
    if dx == 0 and dy == 0 then
       del(current_level.bullets, self)
    else
@@ -500,9 +500,10 @@ pc.move = function(self, current_level)
    dx, dy, self.direction =
       handle_direction_key_press(self.speed, self.direction)
    
-   dx, dy = check_door_collisions(current_level, dx, dy,
+   dx, dy = check_wall_collisions(current_level, dx, dy,
 				  self.x, self.y,
-				  self.w, self.h)
+				  self.w, self.h,
+				  true)
    
    
    dx, dy, self.touching_robot = check_robot_collisions(
@@ -523,14 +524,10 @@ pc.shoot = function(self, current_level)
       or not self.is_firing() then
 	 return
    end
-
-   log("creating bullet "..#bullets)
    local b = bullet.new(
-      {x = self.x, y = self.y, direction = self.direction})
+      {x = self.x+(self.w/2)-1, y = self.y+(self.h/2), direction = self.direction})
 
-  
    add(current_level.bullets, b)
-   log("bullet count "..#bullets)
    self.firing_delay = 10
 end
 
@@ -572,16 +569,23 @@ handle_direction_key_press = function(speed, direction)
 end
 
 -- determine if the player character will collide with walls
-check_door_collisions = function(current_level, dx, dy, x, y, w, h)
+check_wall_collisions = function(current_level, dx, dy, x, y, w, h, allow_through_doors)
    -- the outer walls are drawn on the map
    -- so we check for them specially
    if x+dx < 8 or x+dx > 120-w then
       dx = 0
    end
+
+   if not allow_through_doors then
+      if y+dy < 8 or y+dy > 120-w then
+         dy = 0
+      end
+   end
+
+   
    
    local start_door_x, exit_door_x = current_level:door_coords()
 
-   -- allow the pc to walk through the doors
    if y+dy < 8 then
       if start_door_x == 0
 	 or x < start_door_x
@@ -590,24 +594,29 @@ check_door_collisions = function(current_level, dx, dy, x, y, w, h)
 	 dy = 0
       else -- but not the walls beside the doors
 	 if x+dx < start_door_x
-	 or x+w+dx > start_door_x+16 then
+	    or x+w+dx > start_door_x+16
+	 then
 	    dx = 0
-	 end	 
-      end
+	 end
+      end   
    end
-   
+      
+      
    if y+dy > 120-h then
       if x < exit_door_x
-	 or x+w > exit_door_x+16
+         or x+w > exit_door_x+16
       then
 	 dy = 0
       else
 	 if x+dx < exit_door_x
-	 or x+w+dx > exit_door_x+16 then
-	    dx = 0
+	    or x+w+dx > exit_door_x+16
+	 then
+	       dx = 0
 	 end	 
       end
    end
+   
+
    
    if dx != 0 or dy != 0 then
       for room in all(current_level.rooms) do
