@@ -100,6 +100,82 @@ inc_x_y = function(index, x_current, y_current,
    return x_current, y_current
 end
 
+-- prevent a thing from moving in a certain direction
+-- if it is blocked by a wall
+check_wall_collisions = function(current_level, dx, dy, x, y, w, h, allow_through_doors)
+   -- the outer walls are drawn on the map
+   -- so we check for them specially
+   if x+dx < 8 or x+dx > 120-w then
+      dx = 0
+   end
+
+   if not allow_through_doors then
+      if y+dy < 8 or y+dy > 120-w then
+         dy = 0
+      end
+   end
+   
+   local start_door_x, exit_door_x = current_level:door_coords()
+
+   if y+dy < 8 then
+      if start_door_x == 0
+	 or x < start_door_x
+	 or x+w > start_door_x+16
+      then
+	 dy = 0
+      else -- but not the walls beside the doors
+	 if x+dx < start_door_x
+	    or x+w+dx > start_door_x+16
+	 then
+	    dx = 0
+	 end
+      end   
+   end
+      
+      
+   if y+dy > 120-h then
+      if x < exit_door_x
+         or x+w > exit_door_x+16
+      then
+	 dy = 0
+      else
+	 if x+dx < exit_door_x
+	    or x+w+dx > exit_door_x+16
+	 then
+	       dx = 0
+	 end	 
+      end
+   end
+   
+   if dx != 0 or dy != 0 then
+      for room in all(current_level.rooms) do
+	 if room.room_type == SIDE_ROOM then
+	    if box_hit(x+dx, y,
+		       w, h,
+		       room.x, room.y,
+		       room.w, room.h) then
+	       dx = 0
+	    end
+
+	    if box_hit(x, y+dy,
+		       w, h,
+		       room.x, room.y,
+		       room.w, room.h) then
+	       dy = 0
+	    end	 
+	 end      
+      end
+
+   end
+
+   return dx, dy
+end
+
+-- generic function to reduce hitpoints
+take_damage = function(self, damage)
+   damage = damage or 1
+   self.hit_points -= damage
+end
 
 -- # Game objects/entities
 bullet = {}
@@ -141,7 +217,7 @@ bullet.update = function(self, current_level)
    for r in all(current_level.robots) do
       if box_hit(self.x, self.y, self.w, self.h,
 		 r.x, r.y, r.w, r.h) then
-	 --r:take_damage()
+	 r:take_damage(1)
 	 dx = 0
 	 dy = 0
       end
@@ -158,7 +234,6 @@ bullet.update = function(self, current_level)
 
    
 end
-
 
 level = {} -- initialise a global variable representing the current level
 
@@ -577,83 +652,7 @@ handle_direction_key_press = function(speed, direction)
    return dx, dy, direction
 end
 
--- determine if the player character will collide with walls
-check_wall_collisions = function(current_level, dx, dy, x, y, w, h, allow_through_doors)
-   -- the outer walls are drawn on the map
-   -- so we check for them specially
-   if x+dx < 8 or x+dx > 120-w then
-      dx = 0
-   end
 
-   if not allow_through_doors then
-      if y+dy < 8 or y+dy > 120-w then
-         dy = 0
-      end
-   end
-
-   
-   
-   local start_door_x, exit_door_x = current_level:door_coords()
-
-   if y+dy < 8 then
-      if start_door_x == 0
-	 or x < start_door_x
-	 or x+w > start_door_x+16
-      then
-	 dy = 0
-      else -- but not the walls beside the doors
-	 if x+dx < start_door_x
-	    or x+w+dx > start_door_x+16
-	 then
-	    dx = 0
-	 end
-      end   
-   end
-      
-      
-   if y+dy > 120-h then
-      if x < exit_door_x
-         or x+w > exit_door_x+16
-      then
-	 dy = 0
-      else
-	 if x+dx < exit_door_x
-	    or x+w+dx > exit_door_x+16
-	 then
-	       dx = 0
-	 end	 
-      end
-   end
-   
-   if dx != 0 or dy != 0 then
-      for room in all(current_level.rooms) do
-	 if room.room_type == SIDE_ROOM then
-	    if box_hit(x+dx, y,
-		       w, h,
-		       room.x, room.y,
-		       room.w, room.h) then
-	       dx = 0
-	    end
-
-	    if box_hit(x, y+dy,
-		       w, h,
-		       room.x, room.y,
-		       room.w, room.h) then
-	       dy = 0
-	    end	 
-	 end      
-      end
-
-   end
-
-   return dx, dy
-end
-
--- check if the player character is colliding with any robots
-check_robot_collisions = function(current_level, dx, dy, x, y, w, h
-)
-  return dx, dy, false
-end
 
 -- # robots
 robot = {} -- initialise a global variable for a robot. We never actually use this.
@@ -670,9 +669,11 @@ robot.new = function(init)
    self.y = init.y or 20
    self.w = init.w or 8
    self.h = init.h or 8
+   self.hit_points = init.hitpoints or 1
    self.update = init.update or robot.update
    self.animate = init.animate or robot.animate
    self.draw = init.draw or robot.draw
+   self.take_damage = take_damage
 
    return self
 end
