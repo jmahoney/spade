@@ -535,7 +535,8 @@ pc.new = function(init)
    self.w = 4
    self.h = 8
    self.speed = 1
-   self.touching_robot = false
+   self.alive = true
+   self.death_delay = 0
    self.firing_delay = 0
    self.can_move = pc.can_move
    self.draw = pc.draw
@@ -543,6 +544,7 @@ pc.new = function(init)
    self.move = pc.move
    self.shoot = pc.shoot
    self.update = pc.update
+   self.handle_robot_collision = pc.handle_robot_collision
    return self
 end
 
@@ -568,8 +570,8 @@ end
 -- determine if the player characters coordinates could change
 pc.can_move = function(self)
    return (btn(0) or btn(1) or btn(2) or btn(3))
+      and self.alive
       and not self:is_firing()
-      and not self.touching_robot
 end
 
 -- determine the player character is trying to shoot
@@ -596,9 +598,23 @@ pc.move = function(self, current_level)
 				  self.x, self.y,
 				  self.w, self.h,
 				  true)
+
+   for r in all(current_level.robots) do
+      if box_hit(self.x, self.y, self.w, self.h,
+		 r.x, r.y, r.w, r.h) then
+	 self:handle_robot_collision(current_level, r)
+      end
+   end
+   
    
    self.x += dx
    self.y += dy
+end
+
+-- oh crap we walked into a robot
+pc.handle_robot_collision = function(self, current_level, r)
+   self.alive = false
+   self.death_delay = 15
 end
 
 -- create a bullet fired by the player character
@@ -629,7 +645,7 @@ end
 handle_direction_key_press = function(speed, direction)
    local dx = 0
    local dy = 0
-  
+   
    if btn(0) then
       dx = -speed
      direction = LEFT
