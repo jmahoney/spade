@@ -136,9 +136,19 @@ bullet.update = function(self, current_level)
    end
 
    dx, dy = check_wall_collisions(current_level, dx, dy,
-			    self.x, self.y, self.w, self.h, false)
+				  self.x, self.y, self.w, self.h, false)
 
-   log('dx: '..dx..' dy: '..dy)
+   for r in all(current_level.robots) do
+      if box_hit(self.x, self.y, self.w, self.h,
+		 r.x, r.y, r.w, r.h) then
+	 --r:take_damage()
+	 dx = 0
+	 dy = 0
+      end
+   end
+   
+
+   
    if dx == 0 and dy == 0 then
       del(current_level.bullets, self)
    else
@@ -146,7 +156,7 @@ bullet.update = function(self, current_level)
       self.y += dy
    end
 
-   --log('x: '..self.x..' y: '..self.y)
+   
 end
 
 
@@ -363,7 +373,8 @@ level.populate_robots = function(self)
    local exit_room = self:exit_room()
    local x = exit_room.x+12
    local y = exit_room.y+10
-   local robot = robot.new({x=x, y=y, sprites = {7,8,7,9}})
+   local robot = robot.new({x=x, y=y, sprites = {7,8,7,9},
+			    w=5, h=7})
    add(self.robots, robot)
 end
 
@@ -446,7 +457,7 @@ pc.new = function(init)
    self.y = init.y or 10
    self.w = 4
    self.h = 8
-   self.speed = 2
+   self.speed = 1
    self.touching_robot = false
    self.firing_delay = 0
    self.can_move = pc.can_move
@@ -509,12 +520,6 @@ pc.move = function(self, current_level)
 				  self.w, self.h,
 				  true)
    
-   
-   dx, dy, self.touching_robot = check_robot_collisions(
-                                  current_level, dx, dy,
-      				  self.x, self.y,
-				  self.w, self.h)
-				   
    self.x += dx
    self.y += dy
 end
@@ -620,8 +625,6 @@ check_wall_collisions = function(current_level, dx, dy, x, y, w, h, allow_throug
       end
    end
    
-
-   
    if dx != 0 or dy != 0 then
       for room in all(current_level.rooms) do
 	 if room.room_type == SIDE_ROOM then
@@ -665,6 +668,8 @@ robot.new = function(init)
    self.current_delay = self.delay
    self.x = init.x or 20
    self.y = init.y or 20
+   self.w = init.w or 8
+   self.h = init.h or 8
    self.update = init.update or robot.update
    self.animate = init.animate or robot.animate
    self.draw = init.draw or robot.draw

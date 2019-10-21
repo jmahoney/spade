@@ -9,9 +9,8 @@ Features
 * proper tiles
 * seamless tiles
 * sounds
-* shooting
+* pc shoot diagonally
+* robots shoot
 
 
 Bugs
-
-* we should change direction if we shoot in a new direction
