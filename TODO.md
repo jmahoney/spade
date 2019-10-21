@@ -1,7 +1,17 @@
-Features
+Bugs
+* we can change direction when we're dead
 
-* put in robots
-* move the robots
+Features
+* reset level after we die
+* only populate robots when we enter the level
+* more robots
+* make some of the robots move
+* make some of the robots shoot
+
+
+
+Maybe we'll do these things
+
 * put in keys?
 * pick up keys?
 * lock doors
@@ -10,7 +20,6 @@ Features
 * seamless tiles
 * sounds
 * pc shoot diagonally
-* robots shoot
 
 
-Bugs
+
