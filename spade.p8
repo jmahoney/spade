@@ -328,7 +328,7 @@ end
 -- create all the things in a level
 level.generate = function(self, level_number, start_room_number)
    self:generate_rooms(level_number, start_room_number)
-   self:populate_robots()
+   --self:populate_robots()
 end
 
 -- create the rooms in a level. oh boy.
@@ -703,13 +703,14 @@ robot.update = function(self)
    if self.alive and self.hit_points < 1 then
       self.alive = false
       self.sprites = {1}
-      self.death_delay = 7
+      self.sprite_index = 1
+      self.death_delay = 4
    end
 
    if self.death_delay > 0 then
      self.death_delay -= 1
    end
-   
+
    self:animate()
 end
 
@@ -730,16 +731,17 @@ end
 maybe_change_level = function(pc)
    local level_number = level.level_number
    if pc.y < 4 and level.level_number > 1 then
-      level_number -= 1
-      level = levels[level_number]
+      level = levels[level_number-1]
       pc.y = 120
    end
    if pc.y > 124 then
-      level_number += 1
       if level_number <= #levels then
-	 level = levels[level_number]
+	 level = levels[level_number+1]
 	 pc.y = 8
       end
+   end
+   if level.level_number != level_number then
+      level:populate_robots()
    end
 end
 
@@ -755,11 +757,11 @@ function _init()
    for i = 2, 30 do
       l = level.new({level_number = i, start_room_number = exit_room.room_number-12})
       exit_room = l:exit_room()
-      
       add(levels, l)
    end
    
    level = levels[1]
+   level:populate_robots()
    local pc_xs, pc_ys = level:spawn_coords()
    pc = pc.new({x = pc_xs, y = pc_ys})
 end
