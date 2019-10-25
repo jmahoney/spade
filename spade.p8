@@ -338,7 +338,6 @@ end
 -- create all the things in a level
 level.generate = function(self, level_number, start_room_number)
    self:generate_rooms(level_number, start_room_number)
-   --self:populate_robots()
 end
 
 -- create the rooms in a level. oh boy.
@@ -460,6 +459,8 @@ level.populate_robots = function(self)
    local exit_room = self:exit_room()
    local x = exit_room.x+12
    local y = exit_room.y+10
+   self.robots = {}
+   
    local robot = robot.new({x=x, y=y, sprites = {7,8,7,9},
 			    w=5, h=7})
    add(self.robots, robot)
@@ -545,6 +546,7 @@ pc.new = function(init)
    self.w = 4
    self.h = 8
    self.speed = 2
+   self.hit_points = 1
    self.alive = true
    self.death_delay = 0
    self.firing_delay = 0
@@ -555,23 +557,28 @@ pc.new = function(init)
    self.shoot = pc.shoot
    self.update = pc.update
    self.handle_robot_collision = pc.handle_robot_collision
+   self.take_damage = take_damage
    return self
 end
 
 -- draw the player character on the screen
 -- there are four different sprites we show depending on the direction
 pc.draw = function(self)
-   if self.direction == LEFT then
-      self.sprite = 38
-   end
-   if self.direction == RIGHT then
-      self.sprite = 3
-   end
-   if self.direction == DOWN then
-      self.sprite = 40
-   end
-   if self.direction == UP then
-      self.sprite = 39
+   if self.alive then
+      if self.direction == LEFT then
+	 self.sprite = 38
+      end
+      if self.direction == RIGHT then
+	 self.sprite = 3
+      end
+      if self.direction == DOWN then
+	 self.sprite = 40
+      end
+      if self.direction == UP then
+	 self.sprite = 39
+      end
+   else
+      self.sprite = 2
    end
    
    spr(self.sprite, self.x, self.y)
@@ -624,8 +631,7 @@ end
 
 -- oh crap we walked into a robot
 pc.handle_robot_collision = function(self, current_level, r)
-   self.alive = false
-   self.death_delay = 15
+   self:take_damage(1)
 end
 
 -- create a bullet fired by the player character
@@ -646,10 +652,32 @@ end
 
 -- update the player character's state
 pc.update = function(self, current_level)
-   if self.firing_delay > 0 then self.firing_delay -= 1 end
-   self:move(current_level)
-   self:shoot(current_level)
+   if self.alive and self.hit_points < 1 then
+      self.alive = false
+      self.death_delay = 4
+   end
+
+   if self.death_delay > 0 then
+      self.death_delay -= 1
+      if self.death_delay == 0 then
+	 respawn(self, current_level)
+      end
+   end
+   
+   if self.alive then
+      if self.firing_delay > 0 then self.firing_delay -= 1 end
+      self:move(current_level)
+      self:shoot(current_level)
+   end
 end
+
+respawn = function(pc, current_level)
+   pc.alive = true
+   pc.hit_points = 1
+   pc.x, pc.y = current_level:spawn_coords()
+   current_level:populate_robots()
+end
+
 
 
 -- get change in x&y coords and the direction the player character is facing
@@ -796,12 +824,12 @@ function _draw()
 end
 
 __gfx__
-0000000000800000000000000aa00000000077000048840000082000058500000558000008550000008550000000000000000000000000000000000000000000
-0000000008a8000008000800a7b000000000870000488400002220000555000005550000055500000055500004aaaa0004bbbb0004eeee000000000000000000
-007007008aaa800000a8a000a770000000007700004444000002000000600000006000000060000000060000000a0a00000b0b00000e0e000000000000000000
-0007700008a80000008a8000a6600000000866000090090000929000668660006686600066866000088800000000000000000000000000000000000000000000
-000770000080000000a8a00006990000000077000900009000202000600060006000600060006000000600000000000000000000000000000000000000000000
-00700700000000000800080006600000000055509000000900202200600060006000600060006000000660000000000000000000000000000000000000000000
+0000000000800000800080000aa00000000077000048840000082000058500000558000008550000008550000000000000000000000000000000000000000000
+0000000008a800000a8a0000a7b000000000870000488400002220000555000005550000055500000055500004aaaa0004bbbb0004eeee000000000000000000
+007007008aaa800008a80000a770000000007700004444000002000000600000006000000060000000060000000a0a00000b0b00000e0e000000000000000000
+0007700008a800000a8a0000a6600000000866000090090000929000668660006686600066866000088800000000000000000000000000000000000000000000
+00077000008000008000800006990000000077000900009000202000600060006000600060006000000600000000000000000000000000000000000000000000
+00700700000000000000000006600000000055509000000900202200600060006000600060006000000660000000000000000000000000000000000000000000
 00000000000000000000000009900000000000009000000900200200800080008000800080008000000680000000000000000000000000000000000000000000
 00000000000000000000000009900000000000009000000900800800000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000800000007070000000000000000000000000000000000000000000000000000000000000000000000000000000000000
