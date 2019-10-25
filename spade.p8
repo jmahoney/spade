@@ -595,9 +595,10 @@ pc.move = function(self, current_level)
    local dy = 0
 
    -- we change direction even if we're not moving because it works better for shooting
-   dx, dy, self.direction =
-      handle_direction_key_press(self.speed, self.direction)
-
+   if self.alive then
+      dx, dy, self.direction =
+	 handle_direction_key_press(self.speed, self.direction)
+   end
 
    if not self:can_move() then
       return
