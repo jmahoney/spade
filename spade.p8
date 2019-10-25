@@ -23,6 +23,9 @@ RIGHT = 1
 DOWN = 2
 UP = 3
 
+TOP = 1
+BOTTOM =2
+
 -- Logs messages if debug mode is turned on
 log = function(msg)
    if DEBUG then
@@ -228,9 +231,7 @@ bullet.update = function(self, current_level)
    else
       self.x += dx
       self.y += dy
-   end
-
-   
+   end   
 end
 
 level = {} -- initialise a global variable representing the current level
@@ -244,6 +245,7 @@ level.new = function(init)
    self.rooms = {}
    self.robots = {}
    self.bullets = {}
+   self.entered_from = TOP
    self.exit_room_number = 0
    self.start_room_number = 0
    self.draw = level.draw
@@ -277,9 +279,17 @@ end
 -- determine where the player spawns
 -- spoiler alert it's near the top centre of the start room
 level.spawn_coords = function(self)
-   local start_room = self:start_room()
-   local xs = start_room.x+14
-   local xy = 10 
+   local room, xs, xy
+
+   if self.entered_from == TOP then
+      room = self:start_room()
+      xy = 10
+   else
+      room = self:exit_room()
+      xy = 110
+   end
+
+   xs = room.x+14
    return xs, xy
 end
 
@@ -704,8 +714,7 @@ robot.update = function(self)
       self.alive = false
       self.sprites = {1}
       self.sprite_index = 1
-      self.death_delay = 4
-   end
+      self.death_delay = 4   end
 
    if self.death_delay > 0 then
      self.death_delay -= 1
@@ -732,11 +741,13 @@ maybe_change_level = function(pc)
    local level_number = level.level_number
    if pc.y < 4 and level.level_number > 1 then
       level = levels[level_number-1]
+      level.entered_from = BOTTOM
       pc.y = 120
    end
    if pc.y > 124 then
       if level_number <= #levels then
 	 level = levels[level_number+1]
+	 level.entered_from = TOP
 	 pc.y = 8
       end
    end
@@ -773,7 +784,6 @@ function _update()
    maybe_change_level(pc)
 
    level:update()
-   
 end
 
 -- draw all the things
