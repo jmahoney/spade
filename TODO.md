@@ -1,13 +1,11 @@
 Bugs
-* we can change direction when we're dead
+* the game crashes when we exit through the final door
 
 Features
-* reset level after we die
-* only populate robots when we enter the level
 * more robots
 * make some of the robots move
 * make some of the robots shoot
-
+* success screen
 
 
 Maybe we'll do these things
