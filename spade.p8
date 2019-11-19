@@ -11,6 +11,8 @@ __lua__
 
 DEBUG = true -- determines whether we are in debug mode or not
 
+MAX_LEVELS = 3
+
 -- ## Types rooms that appear in the map
 SIDE_ROOM = 0 -- a room that has no entrances
 LEFT_RIGHT_ROOM = 1 -- a room that has entrances on the left and right
@@ -774,7 +776,8 @@ maybe_change_level = function(pc)
       pc.y = 120
    end
    if pc.y > 124 then
-      if level_number <= #levels then
+      
+      if level_number < MAX_LEVELS then
 	 level = levels[level_number+1]
 	 level.entered_from = TOP
 	 pc.y = 8
@@ -794,7 +797,7 @@ function _init()
    add(levels, l)
    local exit_room = l:exit_room()
    local start_room = l:start_room()
-   for i = 2, 30 do
+   for i = 2, MAX_LEVELS do
       l = level.new({level_number = i, start_room_number = exit_room.room_number-12})
       exit_room = l:exit_room()
       add(levels, l)

@@ -1,5 +1,5 @@
 Bugs
-* the game crashes when we exit through the final door
+
 
 Features
 * more robots
