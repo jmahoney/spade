@@ -5,19 +5,15 @@ Features
 * more robots
 * make some of the robots move
 * make some of the robots shoot
-* success screen
+* success screen with replay
 
 
 Maybe we'll do these things
-
-* put in keys?
-* pick up keys?
-* lock doors
-* open doors with keys?
-* proper tiles
-* seamless tiles
+* boss stage
+* load screen with instructions
+* doors with keys
 * sounds
 * pc shoot diagonally
-
+* smooth graphics
 
 
